@@ -4,7 +4,7 @@ import cors from 'cors';
 
 //Rutas
 import invernaderoRouter from './router/invernaderoRouter';
-
+import zonaRouter from './router/zonaRouter'
 
 const app = express();
 app.use(cors({ origin: 'http://localhost:' })); 
@@ -12,5 +12,6 @@ app.use(express.json());
 
 // endpoints
 app.use('/api/invernadero', invernaderoRouter);
+app.use('/api/zona', zonaRouter);
 
 export default app;

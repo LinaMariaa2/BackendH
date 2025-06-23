@@ -1,34 +1,35 @@
-import {
-  Table, Column, Model, DataType, PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt, ForeignKey} from 'sequelize-typescript';
+import {Table, Column, Model, DataType, PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt, ForeignKey, BelongsTo} from 'sequelize-typescript';
+//import { Persona } from '../models/persona';
+  
+  @Table({tableName: 'tbl_invernadero', timestamps: true })
+  export class Invernadero extends Model {
 
-@Table({tableName: 'tbl_invernadero', timestamps: true })
-    export class Invernadero extends Model<Invernadero> {
-
-  @PrimaryKey@AutoIncrement
+  @PrimaryKey
+  @AutoIncrement
   @Column({ type: DataType.INTEGER, allowNull: false })
-  id_invernadero!: number;
+  declare id_invernadero: number;
 
   @Column({ type: DataType.STRING(50), allowNull: false })
-  nombre!: string;
+  declare nombre: string;
 
   @Column({ type: DataType.TEXT, allowNull: false })
-  descripcion!: string;
+  declare descripcion: string;
 
   @Column({
     type: DataType.ENUM('activo', 'inactivo', 'mantenimiento'),
     allowNull: false,
     defaultValue: 'activo'
   })
-  estado!: string;
+  declare estado: 'activo' | 'inactivo' | 'mantenimiento';
 
   @Column({ type: DataType.INTEGER, allowNull: false, defaultValue: 0 })
-  zonas_totales!: number;
+  declare zonas_totales: number;
 
   @Column({ type: DataType.INTEGER, allowNull: false, defaultValue: 0 })
-  zonas_activas!: number;
+  declare zonas_activas: number;
 
-//   @Column({ type: DataType.INTEGER, allowNull: false, field: 'responsable_id' })
-//   responsable_id!: number;
+//@Column({ type: DataType.INTEGER, allowNull: false, field: 'responsable_id' })
+//responsable_id!: number;
 
   @CreatedAt
   @Column({ field: 'created_at' })
@@ -38,12 +39,13 @@ import {
   @Column({ field: 'updated_at' })
   declare updatedAt: Date;
   
-   //@ForeignKey(() => Persona)
-  //@Column({ field: 'responsable_id', type: DataType.INTEGER, onDelete: 'CASCADE' })
-  //responsableId: number;
+//@ForeignKey(() => Persona)
+//@AllowNull(false)
+//@Column({ field: 'responsable_id', type: DataType.INTEGER, onDelete: 'CASCADE' })
+//responsable_id!: number;
 
-  //@BelongsTo(() => Persona)
-  //persona: Persona;
+//@BelongsTo(() => Persona)
+//persona!: Persona;
 
 }
 

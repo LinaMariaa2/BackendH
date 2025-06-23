@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import { invernaderoController } from '../controllers/invernaderoController';
-import { validateInvernaderoId, validateInvernaderoNombreUnico, validateInvernaderoBody} from '../middlewares/invernaderoValidator';
+import {validateInvernaderoId, validateInvernaderoNombreUnico, validateInvernaderoBody,} from '../middlewares/invernaderoValidator';
 import { handleInputErrors } from '../middlewares/validation';
 
 const router = Router();
 
+
 router.get('/', invernaderoController.getAll);
+router.get('/todos', invernaderoController.getAllActivos);
 
 router.get(
   '/:id',
@@ -31,12 +33,32 @@ router.put(
   invernaderoController.actualizarInvernadero
 );
 
+router.patch(
+  '/inactivar/:id',
+  validateInvernaderoId,
+  handleInputErrors,
+  invernaderoController.inactivarInvernadero
+);
+
+router.patch(
+  '/activar/:id',
+  validateInvernaderoId,
+  handleInputErrors,
+  invernaderoController.activarInvernadero
+);
+
+router.patch(
+  '/mantenimiento/:id',
+  validateInvernaderoId,
+  handleInputErrors,
+  invernaderoController.mantenimientoInvernadero
+);
+
 router.delete(
   '/:id',
   validateInvernaderoId,
   handleInputErrors,
   invernaderoController.eliminarInvernadero
 );
-
 
 export default router;
