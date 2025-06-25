@@ -1,10 +1,21 @@
-import {Table, Column, Model, HasMany, DataType, PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt, ForeignKey, BelongsTo} from 'sequelize-typescript';
-//import { Persona } from '../models/persona';
-import {Zona} from '../models/zona';
+import {
+  Table,
+  Column,
+  Model,
+  HasMany,
+  DataType,
+  PrimaryKey,
+  AutoIncrement,
+  CreatedAt,
+  UpdatedAt,
+  ForeignKey,
+  BelongsTo,
+} from 'sequelize-typescript';
+import { Persona } from './Persona';
+import { Zona } from './zona';
 
-  @Table({tableName: 'tbl_invernadero', timestamps: true })
-  export class Invernadero extends Model {
-
+@Table({ tableName: 'tbl_invernadero', timestamps: true })
+export class Invernadero extends Model {
   @PrimaryKey
   @AutoIncrement
   @Column({ type: DataType.INTEGER, allowNull: false })
@@ -19,7 +30,7 @@ import {Zona} from '../models/zona';
   @Column({
     type: DataType.ENUM('activo', 'inactivo', 'mantenimiento'),
     allowNull: false,
-    defaultValue: 'activo'
+    defaultValue: 'activo',
   })
   declare estado: 'activo' | 'inactivo' | 'mantenimiento';
 
@@ -29,8 +40,19 @@ import {Zona} from '../models/zona';
   @Column({ type: DataType.INTEGER, allowNull: false, defaultValue: 0 })
   declare zonas_activas: number;
 
-//@Column({ type: DataType.INTEGER, allowNull: false, field: 'responsable_id' })
-//responsable_id!: number;
+  @ForeignKey(() => Persona)
+  @Column({ type: DataType.INTEGER, allowNull: false,
+    field: 'responsable_id',
+    onDelete: 'CASCADE',
+  })
+  declare responsable_id: number;
+
+  @BelongsTo(() => Persona, { foreignKey: 'responsable_id', targetKey: 'id_persona' })
+  declare persona: Persona;
+
+
+  @HasMany(() => Zona, { foreignKey: 'id_invernadero' })
+  declare zonas: Zona[];
 
   @CreatedAt
   @Column({ field: 'created_at' })
@@ -39,19 +61,6 @@ import {Zona} from '../models/zona';
   @UpdatedAt
   @Column({ field: 'updated_at' })
   declare updatedAt: Date;
-  
-  @HasMany(() => Zona, { foreignKey: 'id_invernadero' })
-  declare zonas: Zona[];
-
-  
-//@ForeignKey(() => Persona)
-//@AllowNull(false)
-//@Column({ field: 'responsable_id', type: DataType.INTEGER, onDelete: 'CASCADE' })
-//responsable_id!: number;
-
-//@BelongsTo(() => Persona)
-//persona!: Persona;
-
 }
 
 export default Invernadero;
