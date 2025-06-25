@@ -51,7 +51,7 @@ export class invernaderoController {
   static crearInvernadero = async (req: Request, res: Response) => {
   try {
     const totalInvernaderos = await Invernadero.count(); //cuenta los invernaderos existentes
-    if (totalInvernaderos >= 5) {
+    if (totalInvernaderos >= 9) {
       res.status(400).json({ 
         error: 'No se pueden crear más de 5 invernaderos'
       });

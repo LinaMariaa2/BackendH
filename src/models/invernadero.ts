@@ -40,16 +40,17 @@ export class Invernadero extends Model {
   @Column({ type: DataType.INTEGER, allowNull: false, defaultValue: 0 })
   declare zonas_activas: number;
 
-  @ForeignKey(() => Persona)
-  @Column({ type: DataType.INTEGER, allowNull: false,
-    field: 'responsable_id',
-    onDelete: 'CASCADE',
-  })
-  declare responsable_id: number;
+ @ForeignKey(() => Persona)
+@Column({
+  type: DataType.INTEGER,
+  allowNull: false,
+  field: 'responsable_id', // Este es el nombre que tendrá en la tabla
+  onDelete: 'CASCADE',
+})
+declare responsable_id: number;
 
-  @BelongsTo(() => Persona, { foreignKey: 'responsable_id', targetKey: 'id_persona' })
-  declare persona: Persona;
-
+@BelongsTo(() => Persona, { foreignKey: 'responsable_id' })
+declare persona: Persona;
 
   @HasMany(() => Zona, { foreignKey: 'id_invernadero' })
   declare zonas: Zona[];

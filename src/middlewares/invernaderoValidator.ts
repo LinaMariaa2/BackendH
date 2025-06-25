@@ -1,6 +1,6 @@
 import { body, param } from 'express-validator';
 import Invernadero from '../models/invernadero';
-// import Persona from '../models/persona'; 
+import Persona from '../models/Persona'; 
 
 export const validateInvernaderoId = [
   param('id')
@@ -38,15 +38,15 @@ export const validateInvernaderoBody = [
     .isIn(['activo', 'inactivo', 'mantenimiento'])
     .withMessage('El estado debe ser: "activo", "inactivo" o "mantenimiento"'),
     
-  // body('responsable_id')
-  //   .notEmpty().withMessage('El responsable es obligatorio')
-  //   .isInt({ gt: 0 }).withMessage('Debe ser un número entero positivo')
-  //   .custom(async (id) => {
-  //     const persona = await Persona.findByPk(id);
-  //     if (!persona) throw new Error('El responsable no existe');
-  //     if (persona.estado !== 'activo') throw new Error('El responsable debe estar activo');
-  //     if (!['admin', 'superadmin'].includes(persona.rol)) {
-  //       throw new Error('El responsable debe tener rol de admin o superadmin');
-  //     }
-  //}),
+  body('responsable_id')
+    .notEmpty().withMessage('El responsable es obligatorio')
+    .isInt({ gt: 0 }).withMessage('Debe ser un número entero positivo')
+    .custom(async (id) => {
+      const persona = await Persona.findByPk(id);
+      if (!persona) throw new Error('El responsable no existe');
+      if (persona.estado !== 'activo') throw new Error('El responsable debe estar activo');
+      if (!['admin', 'superadmin'].includes(persona.rol)) {
+        throw new Error('El responsable debe tener rol de admin o superadmin');
+      }
+  }),
 ];

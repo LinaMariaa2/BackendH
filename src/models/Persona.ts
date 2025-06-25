@@ -24,9 +24,9 @@ export class Persona extends Model {
   @Default('aprendiz')
   @AllowNull(false)
   @Column({
-    type: DataType.ENUM('administrador', 'instructor', 'aprendiz')
+    type: DataType.ENUM('admin', 'aprendiz')
   })
-  declare rol: 'administrador' | 'instructor' | 'aprendiz';
+  declare rol: 'admin' | 'aprendiz';
 
   @Default('activo')
   @Column({

@@ -1,7 +1,7 @@
 import server from './server'
 import sequelize from './config/db'
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 4000;
 async function startServer(){
     try{
         await sequelize.authenticate();
