@@ -7,6 +7,8 @@ const router = Router();
 router.get('/', zonaController.getAll);
 
 router.get('/todos', zonaController.getAllActivos);
+router.get('/invernadero/:id', zonaController.getZonasPorInvernadero);
+
 
 router.get(
   '/:id',

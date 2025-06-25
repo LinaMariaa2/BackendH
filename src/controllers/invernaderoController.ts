@@ -93,7 +93,6 @@ export class invernaderoController {
 static inactivarInvernadero = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    
     const invernadero = await Invernadero.findByPk(id);
 
     if (!invernadero) {
@@ -104,7 +103,6 @@ static inactivarInvernadero = async (req: Request, res: Response) => {
     await invernadero.save({ fields: ['estado'] });
 
     res.json({ mensaje: 'Invernadero inactivado correctamente' });
-
   } catch (error: any) {
     res.status(500).json({
       error: 'Error al inactivar el invernadero',
@@ -162,9 +160,7 @@ await invernadero.save({ fields: ['estado'] });
 static eliminarInvernadero = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-
     const invernadero = await Invernadero.findByPk(id);
-
     if (!invernadero) {
       res.status(404).json({ error: 'Invernadero no encontrado' });
     return;

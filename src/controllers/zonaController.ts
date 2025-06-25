@@ -4,7 +4,7 @@ import { actualizarConteoZonas } from '../helpers/actualizarConteoZona';
 
 export class zonaController {
 
-  static getAll = async (req: Request, res: Response): Promise<void> => {
+  static getAll = async (req: Request, res: Response) => {
     try {
       const zonas = await Zona.findAll({
         order: [['id_zona', 'ASC']],
@@ -28,7 +28,19 @@ export class zonaController {
       });
   }}
 
-  static getById = async (req: Request, res: Response): Promise<void> => {
+  static getZonasPorInvernadero = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    try {
+      const zonas = await Zona.findAll({
+        where: { id_invernadero: id }
+      });
+      res.json(zonas);
+    } catch (error) {
+      res.status(500).json({ message: 'Error al obtener zonas del invernadero', error });
+    }
+  }
+
+  static getById = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const zona = await Zona.findByPk(id);
@@ -42,7 +54,7 @@ export class zonaController {
     }
   };
 
-  static crearZona = async (req: Request, res: Response): Promise<void> => {
+  static crearZona = async (req: Request, res: Response) => {
     try {
       const zona = new Zona(req.body);
       await zona.save();
@@ -53,7 +65,7 @@ export class zonaController {
     }
   };
 
-  static actualizarZona = async (req: Request, res: Response): Promise<void> => {
+  static actualizarZona = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const [updated] = await Zona.update(req.body, {
@@ -76,7 +88,7 @@ export class zonaController {
     }
   };
 
-  static inactivarZona = async (req: Request, res: Response): Promise<void> => {
+  static inactivarZona = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const zona = await Zona.findByPk(id);
@@ -86,17 +98,15 @@ export class zonaController {
         return;
       }
 
-      zona.estado = 'inactivo';
-      await zona.save();
-      await actualizarConteoZonas(zona.id_invernadero);
-
+    zona.set('estado', 'inactivo');
+    await zona.save({ fields: ['estado'] });
       res.json({ mensaje: 'Zona inactivada correctamente' });
     } catch (error) {
       res.status(500).json({ error: 'Error al inactivar la zona', details: error });
     }
   };
 
-  static activarZona = async (req: Request, res: Response): Promise<void> => {
+  static activarZona = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const zona = await Zona.findByPk(id);
@@ -105,10 +115,9 @@ export class zonaController {
         res.status(404).json({ error: 'Zona no encontrada' });
         return;
       }
-
-      zona.estado = 'activo';
-      await zona.save();
-      await actualizarConteoZonas(zona.id_invernadero);
+      
+      zona.set('estado', 'activo');
+     await zona.save({ fields: ['estado'] });
 
       res.json({ mensaje: 'Zona activada correctamente' });
     } catch (error) {
@@ -116,7 +125,7 @@ export class zonaController {
     }
   };
 
-  static mantenimientoZona = async (req: Request, res: Response): Promise<void> => {
+  static mantenimientoZona = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const zona = await Zona.findByPk(id);
@@ -126,9 +135,8 @@ export class zonaController {
         return;
       }
 
-      zona.estado = 'mantenimiento';
-      await zona.save();
-      await actualizarConteoZonas(zona.id_invernadero);
+      zona.set('estado', 'mantenimiento');
+      await zona.save({ fields: ['estado'] });
 
       res.json({ mensaje: 'Zona puesta en mantenimiento correctamente' });
     } catch (error) {
@@ -136,7 +144,7 @@ export class zonaController {
     }
   };
   //organizar la validacion de programaciones asociadas
-  static eliminarZona = async (req: Request, res: Response): Promise<void> => {
+  static eliminarZona = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const zona = await Zona.findByPk(id);

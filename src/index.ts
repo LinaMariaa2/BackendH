@@ -11,7 +11,7 @@ async function startServer(){
         console.log('base de datos y modelos sincornizados')
 
         server.listen(port, () =>{
-            console.log(`Servidor escuchando en el puerto http://localhost:3000`)
+            console.log(`Servidor escuchando en el puerto http://localhost:4000`)
         });
     }catch (error){
         console.log('error durante la inicializacion', error)

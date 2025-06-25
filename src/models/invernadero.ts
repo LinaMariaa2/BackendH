@@ -1,6 +1,7 @@
-import {Table, Column, Model, DataType, PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt, ForeignKey, BelongsTo} from 'sequelize-typescript';
+import {Table, Column, Model, HasMany, DataType, PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt, ForeignKey, BelongsTo} from 'sequelize-typescript';
 //import { Persona } from '../models/persona';
-  
+import {Zona} from '../models/zona';
+
   @Table({tableName: 'tbl_invernadero', timestamps: true })
   export class Invernadero extends Model {
 
@@ -38,6 +39,10 @@ import {Table, Column, Model, DataType, PrimaryKey, AutoIncrement, CreatedAt, Up
   @UpdatedAt
   @Column({ field: 'updated_at' })
   declare updatedAt: Date;
+  
+  @HasMany(() => Zona, { foreignKey: 'id_invernadero' })
+  declare zonas: Zona[];
+
   
 //@ForeignKey(() => Persona)
 //@AllowNull(false)
