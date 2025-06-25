@@ -1,7 +1,7 @@
 import server from './server'
 import sequelize from './config/db'
 
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 3000; //4000 para pruebas / 3000 para desarrollo
 async function startServer(){
     try{
         await sequelize.authenticate();
@@ -11,7 +11,7 @@ async function startServer(){
         console.log('base de datos y modelos sincornizados')
 
         server.listen(port, () =>{
-            console.log(`Servidor escuchando en el puerto http://localhost:4000`)
+            console.log(`Servidor escuchando en el puerto http://localhost:3000`)
         });
     }catch (error){
         console.log('error durante la inicializacion', error)

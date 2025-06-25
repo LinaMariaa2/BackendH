@@ -1,16 +1,4 @@
-import {
-  Table,
-  Column,
-  Model,
-  HasMany,
-  DataType,
-  PrimaryKey,
-  AutoIncrement,
-  CreatedAt,
-  UpdatedAt,
-  ForeignKey,
-  BelongsTo,
-} from 'sequelize-typescript';
+import { Table,Column,Model,HasMany,DataType,PrimaryKey,AutoIncrement,CreatedAt,UpdatedAt,ForeignKey,BelongsTo,} from 'sequelize-typescript';
 import { Persona } from './Persona';
 import { Zona } from './zona';
 
@@ -41,11 +29,11 @@ export class Invernadero extends Model {
   declare zonas_activas: number;
 
  @ForeignKey(() => Persona)
-@Column({
-  type: DataType.INTEGER,
-  allowNull: false,
-  field: 'responsable_id', // Este es el nombre que tendrá en la tabla
-  onDelete: 'CASCADE',
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    field: 'responsable_id', // nombre del campo 
+    onDelete: 'CASCADE',
 })
 declare responsable_id: number;
 
