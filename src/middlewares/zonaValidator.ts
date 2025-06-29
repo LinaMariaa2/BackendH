@@ -3,15 +3,14 @@ import Zona from '../models/zona';
 import Invernadero from '../models/invernadero';
 
 
+// middlewares/zonaValidator.ts
+
 export const validateZonaId = [
-  param('id')
-    .isInt({ gt: 0 }).withMessage('El ID debe ser un número entero positivo')
-    .toInt()
-    .custom(async (id) => {
-      const zona = await Zona.findByPk(id);
-      if (!zona) throw new Error('La zona no existe');
-    }),
+  param('id_zona')
+    .isInt({ gt: 0 })
+    .withMessage('El ID debe ser un número entero positivo'),
 ];
+
 
 export const validateZonaNombreUnico = [
   body('nombre')

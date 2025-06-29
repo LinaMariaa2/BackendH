@@ -1,7 +1,8 @@
 import type { Request, Response } from 'express';
 import Zona from '../models/zona';
 import { actualizarConteoZonas } from '../helpers/actualizarConteoZona';
-
+import {GestionCultivo } from '../models/gestionarCultivos';
+import { ZonaCultivoActual } from '../models/ZonaCultivoActual';
 export class zonaController {
 
   static getAll = async (req: Request, res: Response) => {
@@ -158,6 +159,5 @@ export class zonaController {
       res.status(500).json({ error: 'Error al eliminar la zona', details: error });
     }
   };
-
   
   }

@@ -16,11 +16,15 @@ export class Invernadero extends Model {
   declare descripcion: string;
 
   @Column({
-    type: DataType.ENUM('activo', 'inactivo', 'mantenimiento'),
-    allowNull: false,
-    defaultValue: 'activo',
-  })
-  declare estado: 'activo' | 'inactivo' | 'mantenimiento';
+  type: DataType.ENUM({
+    values: ['activo', 'inactivo', 'mantenimiento'],
+  }),
+  field: 'estado',
+  allowNull: false,
+  defaultValue: 'activo',
+})
+declare estado: 'activo' | 'inactivo' | 'mantenimiento';
+
 
   @Column({ type: DataType.INTEGER, allowNull: false, defaultValue: 0 })
   declare zonas_totales: number;

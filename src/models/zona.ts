@@ -1,28 +1,36 @@
-import { Table, Column, DataType, PrimaryKey, ForeignKey, Model, AutoIncrement, CreatedAt, UpdatedAt,BelongsTo, AllowNull } from 'sequelize-typescript';
+import {
+  Table, Column, Model, DataType, PrimaryKey, AutoIncrement,
+  CreatedAt, UpdatedAt, ForeignKey, BelongsTo
+} from 'sequelize-typescript';
 import { Invernadero } from './invernadero';
+import { GestionCultivo } from './gestionarCultivos';
 
-  @Table({ tableName: 'tbl_zona', timestamps: true })
-  export class Zona extends Model {
-  
+@Table({ tableName: 'tbl_zona', timestamps: true })
+export class Zona extends Model {
   @PrimaryKey
   @AutoIncrement
-  @Column({ type: DataType.INTEGER, allowNull: false })
+  @Column(DataType.INTEGER)
   declare id_zona: number;
 
-  @AllowNull(false)
-  @Column({ type: DataType.STRING(100) })
+  @Column({ type: DataType.STRING(100), allowNull: false })
   declare nombre: string;
 
-  @AllowNull(true)
-  @Column({ type: DataType.TEXT })
-  declare descripciones_add: string;
-  
-  @AllowNull(false)
+  @Column(DataType.TEXT)
+  declare descripciones_add?: string;
+
+  @ForeignKey(() => Invernadero)
+  @Column(DataType.INTEGER)
+  declare id_invernadero: number;
+
+  @BelongsTo(() => Invernadero)
+  declare invernadero: Invernadero;
+
   @Column({
     type: DataType.ENUM('activo', 'inactivo', 'mantenimiento'),
-    defaultValue: 'activo'
+    allowNull: false,
+    defaultValue: 'activo',
   })
-  declare estado: 'activo' | 'inactivo' | 'mantenimiento';
+  declare estado: string;
 
   @CreatedAt
   @Column({ field: 'created_at' })
@@ -31,13 +39,5 @@ import { Invernadero } from './invernadero';
   @UpdatedAt
   @Column({ field: 'updated_at' })
   declare updatedAt: Date;
-
-  @ForeignKey(() => Invernadero)
-  @AllowNull(false)
-  @Column({ type: DataType.INTEGER, field: 'id_invernadero' })
-  declare id_invernadero: number;
-
-  @BelongsTo(() => Invernadero)
-  declare invernadero: Invernadero;
 }
 export default Zona;

@@ -2,6 +2,7 @@ import { Sequelize } from 'sequelize-typescript';
 import dotenv from 'dotenv'; // variables de entorno
 import path from 'path';
 
+
 dotenv.config();
 
 const sequelize = new Sequelize({
@@ -25,7 +26,7 @@ const sequelize = new Sequelize({
     acquire: 30000,
     idle: 10000,
   },
-
+ 
   
 });
 

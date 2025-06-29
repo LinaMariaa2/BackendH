@@ -7,7 +7,8 @@ import cors from 'cors';
 import invernaderoRouter from './router/invernaderoRouter';
 import zonaRouter from './router/zonaRouter'
 import personaRouter from './router/personaRouter';
-
+import gestionarCultivoRouter from './router/gestionarCultivoRouter'
+import ZonaCultivoActualRouter from './router/zonaCultivoActualRouter';
 
 const app = express();
 app.use(express.json());
@@ -18,7 +19,8 @@ app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use('/api/invernadero', invernaderoRouter);
 app.use('/api/zona', zonaRouter);
 app.use('/api/persona', personaRouter);
-
+app.use('/api/gestionarCultivos',gestionarCultivoRouter);
+app.use('/api/zonaCultivoActual', ZonaCultivoActualRouter);
 
 
 export default app;

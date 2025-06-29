@@ -1,6 +1,7 @@
 import server from './server'
 import sequelize from './config/db'
 
+
 const port = process.env.PORT || 3000; //4000 para pruebas / 3000 para desarrollo
 async function startServer(){
     try{
