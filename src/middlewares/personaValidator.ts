@@ -2,13 +2,11 @@ import { body, param, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
 import Persona from '../models/Persona'; 
 
-// Middleware para manejar los errores de validación de express-validator
-// Este es el mismo `handleInputErrors` que ya usas en zonaValidator
-// 1. Validación para el ID de Persona (usado en GET by ID, PUT, DELETE, PATCH)
+
 export const validatePersonaId = [
   param('id')
     .isInt({ gt: 0 }).withMessage('El ID de persona debe ser un número entero positivo')
-    .toInt(), // Convierte el parámetro a entero
+    .toInt(),
 ];
 
 // 2. Validación del cuerpo para la creación de una Persona
@@ -22,32 +20,32 @@ export const validatePersonaCreation = [
     .trim()
     .notEmpty().withMessage('El correo electrónico es obligatorio')
     .isEmail().withMessage('El formato del correo electrónico no es válido')
-    .normalizeEmail(), // Normaliza el correo electrónico (ej. a minúsculas)
+    .normalizeEmail(), 
 
   body('contrasena')
     .notEmpty().withMessage('La contraseña es obligatoria')
     .isLength({ min: 8 }).withMessage('La contraseña debe tener al menos 8 caracteres'),
-    // Considera añadir validaciones más robustas aquí (ej. .matches(/regex/))
+    
 
   body('rol')
     .notEmpty().withMessage('El rol es obligatorio')
     .isIn(['administrador', 'instructor', 'aprendiz']).withMessage('El rol no es válido. Debe ser "administrador", "instructor" o "aprendiz"'),
 
-  body('estado') // Aunque tiene un valor por defecto, permite especificarlo
-    .optional() // Es opcional en la creación ya que tiene un defaultValue
+  body('estado') 
+    .optional() 
     .isIn(['activo', 'inactivo', 'bloqueado']).withMessage('El estado no es válido. Debe ser "activo", "inactivo" o "bloqueado"'),
   
-  body('autenticado') // Aunque tiene un valor por defecto, permite especificarlo
-    .optional() // Es opcional en la creación ya que tiene un defaultValue
+  body('autenticado') 
+    .optional() 
     .isBoolean().withMessage('El valor de autenticado debe ser un booleano')
     .toBoolean(),
 ];
 
-// 3. Validación para la actualización de una Persona (todos los campos son opcionales, pero si se envían, deben ser válidos)
+// 3. Validación para la actualización de una Persona 
 export const validatePersonaUpdate = [
   
   body('nombre_usuario')
-    .optional() // Hacemos que sea opcional para actualizaciones parciales
+    .optional() 
     .trim()
     .notEmpty().withMessage('El nombre de usuario no puede estar vacío')
     .isLength({ min: 3, max: 50 }).withMessage('El nombre de usuario debe tener entre 3 y 50 caracteres'),
@@ -78,14 +76,14 @@ export const validatePersonaUpdate = [
 // 4. Validación de correo único 
 export const validatePersonaCorreoUnico = async (req: Request, res: Response, next: NextFunction) => {
   const { correo } = req.body;
-  const { id } = req.params; // Para el caso de actualización, el correo puede ser el mismo para la misma persona
+  const { id } = req.params; 
 
-  if (correo) { // Solo validamos si se está enviando un correo
+  if (correo) { 
     try {
       const personaExistente = await Persona.findOne({ where: { correo } });
 
       if (personaExistente) {
-        // Si estamos actualizando y la persona existente es la misma que estamos actualizando, permitimos
+
         if (id && personaExistente.id_persona === parseInt(id)) {
           return next();
         }
