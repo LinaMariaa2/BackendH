@@ -24,6 +24,12 @@ export class ZonaCultivoActual extends Model {
   @Column(DataType.INTEGER)
   declare id_cultivo: number;
 
+  @BelongsTo(() => Zona, { as: 'zona', foreignKey: 'id_zona' })
+  declare zona: Zona;
+
+  @BelongsTo(() => GestionCultivo, { as: 'cultivo', foreignKey: 'id_cultivo' })
+  declare cultivo: GestionCultivo;
+
   @CreatedAt
   @Column({ field: 'created_at' })
   declare createdAt: Date;
@@ -31,14 +37,7 @@ export class ZonaCultivoActual extends Model {
   @UpdatedAt
   @Column({ field: 'updated_at' })
   declare updatedAt: Date;
-
-  @BelongsTo(() => Zona, { as: 'zona', foreignKey: 'id_zona' })
-declare zona: Zona;
-
-
-  @BelongsTo(() => GestionCultivo, { as: 'cultivo', foreignKey: 'id_cultivo' })
-declare cultivo: GestionCultivo;
-
 }
+
 
 export default ZonaCultivoActual;

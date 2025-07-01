@@ -2,7 +2,6 @@ import { Sequelize } from 'sequelize-typescript';
 import dotenv from 'dotenv'; // variables de entorno
 import path from 'path';
 
-
 dotenv.config();
 
 const sequelize = new Sequelize({
@@ -17,7 +16,7 @@ const sequelize = new Sequelize({
   dialectOptions: {
     ssl: { // necesarios para permisos con supabase
       require: true,
-      rejectUnauthorized: false,
+      rejectUnauthorized: false, // importante para evitar errores de certificado
     },
   },
   pool: {
@@ -26,9 +25,7 @@ const sequelize = new Sequelize({
     acquire: 30000,
     idle: 10000,
   },
- 
   
 });
-
 
 export default sequelize;

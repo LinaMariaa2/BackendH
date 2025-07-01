@@ -21,18 +21,16 @@ export class Persona extends Model {
   @Column({ type: DataType.STRING(255) })
   declare contrasena: string;
 
-  @Default('aprendiz')
+  @Default('admin')
   @AllowNull(false)
   @Column({
-    type: DataType.ENUM('admin', 'aprendiz')
+  type: DataType.ENUM({ values: ['superadmin', 'admin', 'operario'] }),
   })
-  declare rol: 'admin' | 'aprendiz';
+  declare rol: 'superadmin' | 'admin' | 'operario';
 
-  @Default('activo')
-  @Column({
-    type: DataType.ENUM('activo', 'inactivo', 'bloqueado')
-  })
-  declare estado: 'activo' | 'inactivo' | 'bloqueado';
+  @AllowNull(false)
+  @Column(DataType.ENUM('activo', 'inactivo', 'mantenimiento'))
+  declare estado: string;
 
   @Default(true)
   @Column({ type: DataType.BOOLEAN })

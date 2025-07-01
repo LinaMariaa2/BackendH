@@ -15,10 +15,7 @@
   },
   "include": [
     "./src/**/*.ts",
-    // "./middleware/**/*" // Añade esta línea
   ]
-  // "exclude": [
-  //   "node_modules"
-  // ]
+  
   
 }

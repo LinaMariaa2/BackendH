@@ -1,43 +1,39 @@
 import {
-  Table, Column, Model, DataType, PrimaryKey, AutoIncrement,
-  CreatedAt, UpdatedAt, ForeignKey, BelongsTo
-} from 'sequelize-typescript';
+  Table, Column, Model, DataType, PrimaryKey, AutoIncrement,CreatedAt, UpdatedAt, ForeignKey, BelongsTo, AllowNull, HasMany, HasOne} from 'sequelize-typescript';
 import { Invernadero } from './invernadero';
 import { GestionCultivo } from './gestionarCultivos';
+import { ZonaCultivoActual } from './ZonaCultivoActual';
 
-@Table({ tableName: 'tbl_zona', timestamps: true })
+@Table({ tableName: 'tbl_zona', timestamps: true, underscored: true })
 export class Zona extends Model {
   @PrimaryKey
   @AutoIncrement
-  @Column(DataType.INTEGER)
+  @Column
   declare id_zona: number;
 
-  @Column({ type: DataType.STRING(100), allowNull: false })
+  @AllowNull(false)
+  @Column(DataType.STRING(100))
   declare nombre: string;
 
   @Column(DataType.TEXT)
-  declare descripciones_add?: string;
+  declare descripciones_add: string;
+
+  @AllowNull(false)
+  @Column(DataType.ENUM('activo', 'inactivo', 'mantenimiento'))
+  declare estado: string;
 
   @ForeignKey(() => Invernadero)
-  @Column(DataType.INTEGER)
+  @Column
   declare id_invernadero: number;
 
   @BelongsTo(() => Invernadero)
   declare invernadero: Invernadero;
 
-  @Column({
-    type: DataType.ENUM('activo', 'inactivo', 'mantenimiento'),
-    allowNull: false,
-    defaultValue: 'activo',
-  })
-  declare estado: string;
+  // Relaciones limpias
+  @HasMany(() => GestionCultivo)
+  declare cultivos: GestionCultivo[];
 
-  @CreatedAt
-  @Column({ field: 'created_at' })
-  declare createdAt: Date;
-
-  @UpdatedAt
-  @Column({ field: 'updated_at' })
-  declare updatedAt: Date;
+  @HasOne(() => ZonaCultivoActual)
+  declare cultivoActual: ZonaCultivoActual;
 }
 export default Zona;

@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import GestionCultivo from '../models/gestionarCultivos';
+import {GestionCultivo} from '../models/gestionarCultivos';
 import Zona from '../models/zona';
 
 export class gestionCultivoController {
