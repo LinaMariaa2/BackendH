@@ -1,5 +1,6 @@
-import { Table, Column, DataType, PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt, Default, AllowNull } from 'sequelize-typescript';
-import { Model } from 'sequelize-typescript'; 
+// src/models/Persona.ts
+import { Table, Column, DataType, PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt, Default, AllowNull, Unique } from 'sequelize-typescript';
+import { Model } from 'sequelize-typescript';
 
 @Table({ tableName: 'tbl_persona', timestamps: true })
 export class Persona extends Model {
@@ -18,7 +19,7 @@ export class Persona extends Model {
   declare correo: string;
 
   @AllowNull(false)
-  @Column({ type: DataType.STRING(255) })
+  @Column({ type: DataType.STRING(255) }) 
   declare contrasena: string;
 
   @Default('admin')
@@ -32,9 +33,23 @@ export class Persona extends Model {
   @Column(DataType.ENUM('activo', 'inactivo', 'mantenimiento'))
   declare estado: string;
 
-  @Default(true)
+  @Default(false) 
+  @AllowNull(false)
   @Column({ type: DataType.BOOLEAN })
-  declare autenticado: boolean;
+  declare isVerified: boolean; 
+
+  @AllowNull(true)
+  @Column({ type: DataType.STRING(6) })
+  declare verificationCode: string | null; 
+
+  @AllowNull(true) 
+  @Column({ type: DataType.DATE })
+  declare verificationCodeExpires: Date | null; 
+
+  @Default(0) 
+  @AllowNull(false)
+  @Column({ type: DataType.INTEGER })
+  declare intentos: number;
 
   @CreatedAt
   @Column({ field: 'created_at' })
