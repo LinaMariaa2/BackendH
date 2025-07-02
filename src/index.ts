@@ -6,12 +6,12 @@ console.log('Variables de entorno cargadas:');
 console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'Cargado' : 'NO CARGADO');
 console.log('EMAIL_USER:', process.env.EMAIL_USER);
 console.log('EMAIL_PASS:', process.env.EMAIL_PASS ? 'Cargado' : 'NO CARGADO');
-console.log('SQ_HOST:', process.env.SQ_HOST);
+console.log('SQ_HOST:',  process.env.SQ_HOST);
 
 import server from './server'; // Import your Express application from server.ts
 import { sequelize, connectDB} from './config/db'; // Import 'sequelize' from your database config file
 
-const port = process.env.PORT || 4000; // Use the port from .env or 3000 by default
+const port = process.env.PORT || 3000; // Use the port from .env or 3000 by default
 
 async function startServer() {
     try {
