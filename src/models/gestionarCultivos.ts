@@ -48,6 +48,9 @@ export class GestionCultivo extends Model {
 
   @Column(DataType.ENUM('activo', 'finalizado'))
   declare estado: string;
+  @Column(DataType.TEXT)
+  declare imagenes: string;
+
 
   @ForeignKey(() => Zona)
   @Column

@@ -34,6 +34,12 @@ router.put(
 );
 
 router.patch(
+  '/:id/estado',
+  validateZonaId,
+  handleInputErrors,
+  zonaController.cambiarEstadoGenerico
+);
+router.patch(
   '/inactivar/:id',
   validateZonaId,
   handleInputErrors,

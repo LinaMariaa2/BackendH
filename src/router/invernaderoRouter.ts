@@ -60,6 +60,12 @@ router.patch(
   handleInputErrors,
   invernaderoController.mantenimientoInvernadero
 );
+router.patch(
+  '/:id/estado',
+  validateInvernaderoId,
+  handleInputErrors,
+  invernaderoController.cambiarEstadoGenerico
+);
 
 router.delete(
   '/:id',

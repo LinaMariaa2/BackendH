@@ -3,6 +3,7 @@ import Zona from '../models/zona';
 import { actualizarConteoZonas } from '../helpers/actualizarConteoZona';
 import {GestionCultivo } from '../models/gestionarCultivos';
 import { ZonaCultivoActual } from '../models/ZonaCultivoActual';
+import {Invernadero} from '../models/invernadero';
 export class zonaController {
 
   static getAll = async (req: Request, res: Response) => {
@@ -120,6 +121,31 @@ export class zonaController {
     }
   };
 
+  static cambiarEstadoGenerico = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { estado } = req.body;
+  
+      if (!['activo', 'inactivo', 'mantenimiento'].includes(estado)) {
+        res.status(400).json({ error: 'Estado inválido' });
+        return ;
+      }
+  
+      const invernadero = await Invernadero.findByPk(id);
+      if (!invernadero) {
+        res.status(404).json({ error: 'Invernadero no encontrado' });
+        return ;
+      }
+  
+      invernadero.estado = estado;
+      await invernadero.save({ fields: ['estado'] });
+  
+      res.json({ mensaje: 'Estado actualizado correctamente', invernadero });
+    } catch (error) {
+      console.error('Error al cambiar estado:', error);
+      res.status(500).json({ error: 'Error al cambiar estado', details: error });
+    }
+  };
   static inactivarZona = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;

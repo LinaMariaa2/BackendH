@@ -8,6 +8,8 @@ const router = Router();
 
 router.get('/', gestionCultivoController.getAll);
 router.get('/:id', validateCultivoId, handleInputErrors, gestionCultivoController.getId);
+router.patch('/:id/estado/:estado', validateCultivoId, handleInputErrors, gestionCultivoController.cambiarEstado);
+
 router.get('/zona/:id_zona', gestionCultivoController.getPorZona);
 router.post('/', validateCultivoBody, handleInputErrors, gestionCultivoController.crearCultivo);
 
