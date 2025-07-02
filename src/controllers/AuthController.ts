@@ -69,7 +69,7 @@ export class AuthController {
                 nombre_usuario,
                 correo,
                 contrasena: hashedPassword,
-                rol: 'aprendiz', 
+                rol: 'operario', 
                 estado: 'activo',
                 isVerified: false,
                 verificationCode,

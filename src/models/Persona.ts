@@ -22,12 +22,12 @@ export class Persona extends Model {
   @Column({ type: DataType.STRING(255) }) 
   declare contrasena: string;
 
-  @Default('admin')
+  @Default('operario')
   @AllowNull(false)
   @Column({
-  type: DataType.ENUM({ values: ['superadmin', 'admin', 'operario'] }),
+    type: DataType.ENUM({ values: ['admin', 'operario'] }),
   })
-  declare rol: 'superadmin' | 'admin' | 'operario';
+  declare rol: 'admin' | 'operario';
 
   @AllowNull(false)
   @Column(DataType.ENUM('activo', 'inactivo', 'mantenimiento'))
