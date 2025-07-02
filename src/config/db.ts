@@ -1,20 +1,21 @@
 import { Sequelize } from 'sequelize-typescript';
 import * as path from 'path';
 
-console.log('DEBUG DB_HOST:', process.env.SQ_HOST);
-console.log('DEBUG DB_PORT:', process.env.SQ_PORT);
-console.log('DEBUG DB_USER:', process.env.SQ_USER);
-console.log('DEBUG DB_PASSWORD (length):', process.env.SQ_PASSWORD?.length);
-console.log('DEBUG DB_NAME:', process.env.SQ_DB_NAME);
-console.log('DEBUG DB_SSL:', process.env.DB_SSL);
+// --- DEBUG: Mostrar variables de entorno importantes ---
+console.log('DEBUG DB_HOST:', process.env.DB_HOST);
+console.log('DEBUG DB_PORT:', process.env.DB_PORT);
+console.log('DEBUG DB_USER:', process.env.DB_USER);
+console.log('DEBUG DB_PASSWORD (length):', process.env.DB_PASSWORD?.length);
+console.log('DEBUG DB_NAME:', process.env.DB_NAME);
 
+// --- Sequelize ---
 const sequelize = new Sequelize({
   dialect: 'postgres',
-  host: process.env.SQ_HOST as string,
-  port: parseInt(process.env.SQ_PORT || '5432', 10),
-  username: process.env.SQ_USER as string,
-  password: process.env.SQ_PASSWORD as string,
-  database: process.env.SQ_DB_NAME as string,
+  host: process.env.DB_HOST as string, // ejemplo: db.yasjwniajgvwkrxyyfrm.supabase.co
+  port: parseInt(process.env.DB_PORT || '6543', 10), // puerto del pooler de transacciones
+  username: process.env.DB_USER as string, // usualmente 'postgres'
+  password: process.env.DB_PASSWORD as string,
+  database: process.env.DB_NAME as string,
 
   models: [path.join(__dirname, '/../models')],
   logging: false,
@@ -22,9 +23,9 @@ const sequelize = new Sequelize({
   dialectOptions: {
     ssl: {
       require: true,
-      rejectUnauthorized: false,
+      rejectUnauthorized: false, // Supabase no usa CA pública
     },
-    family: 4, // 👈 Correctamente dentro de dialectOptions
+    family: 4, // 👈 Fuerza IPv4 (necesario para evitar errores en algunas redes)
   },
 
   pool: {
@@ -35,14 +36,15 @@ const sequelize = new Sequelize({
   },
 });
 
+// Función para conectar y sincronizar modelos
 async function connectDB() {
   try {
     await sequelize.authenticate();
-    console.log('Conexión a la base de datos establecida correctamente.');
-    await sequelize.sync({ force: false });
-    console.log('Modelos sincronizados con la base de datos.');
+    console.log('✅ Conexión a la base de datos establecida correctamente.');
+    await sequelize.sync({ force: false }); // cambiar a 'true' solo si quieres reiniciar los datos
+    console.log('✅ Modelos sincronizados con la base de datos.');
   } catch (error: any) {
-    console.error('FATAL ERROR: Error durante la inicialización del servidor y la conexión a la base de datos:', error);
+    console.error('❌ FATAL ERROR: No se pudo conectar a la base de datos:', error);
     throw error;
   }
 }
