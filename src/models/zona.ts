@@ -35,5 +35,14 @@ export class Zona extends Model {
 
   @HasOne(() => ZonaCultivoActual)
   declare cultivoActual: ZonaCultivoActual;
+  
+  @CreatedAt
+  @Column({ field: 'created_at' })
+  declare createdAt: Date;
+
+  @UpdatedAt
+  @Column({ field: 'updated_at' })
+  declare updatedAt: Date;
+
 }
 export default Zona;

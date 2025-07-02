@@ -14,7 +14,7 @@ import {
 import Zona from './zona';
 import Invernadero from './invernadero';
 
-@Table({ tableName: 'tbl_gestion_cultivos', timestamps: true })
+@Table({ tableName: 'tbl_gestion_cultivos'})
 export class GestionCultivo extends Model {
   @PrimaryKey
   @AutoIncrement
@@ -55,6 +55,15 @@ export class GestionCultivo extends Model {
 
   @BelongsTo(() => Zona)
   declare zona: Zona;
+
+  @CreatedAt
+  @Column({ field: 'created_at' }) // si quieres el nombre en snake_case
+  declare createdAt: Date;
+
+  @UpdatedAt
+  @Column({ field: 'updated_at' })
+  declare updatedAt: Date;
+
 }
 
 export default GestionCultivo;

@@ -41,10 +41,41 @@ export class zonaController {
     }
   }
 
+  static obtenerCultivoActualPorZona = async (req: Request, res: Response) => {
+  try {
+    const id_zona = parseInt(req.params.id, 10);
+
+    const zonaCultivo = await ZonaCultivoActual.findOne({
+      where: { id_zona },
+      include: [
+        {
+          model: GestionCultivo,
+          as: 'cultivo', // importante que coincida con el @BelongsTo
+          required: true
+          
+        }
+      ]
+    });
+    console.log('zonaCultivo ===>', zonaCultivo);
+
+    if (!zonaCultivo || !zonaCultivo.cultivo) {
+      res.status(404).json({ mensaje: 'No hay cultivo actual para esta zona.' });
+      return ;
+    }
+
+    res.json(zonaCultivo.cultivo);
+    return;
+
+  } catch (error) {
+    console.error('Error al obtener el cultivo actual:', error);
+    res.status(500).json({ mensaje: 'Error del servidor.' });
+    return ;
+  }
+};
   static getById = async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
-      const zona = await Zona.findByPk(id);
+      const { id_zona } = req.params;
+      const zona = await Zona.findByPk(id_zona);
       if (!zona) {
         res.status(404).json({ error: 'Zona no encontrada' });
         return;

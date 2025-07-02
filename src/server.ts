@@ -10,7 +10,7 @@ import ZonaCultivoActualRouter from './router/zonaCultivoActualRouter';
 import bitacoraRouter from './router/bitacoraRouter';
 import imagenRouter from './router/imagenRouter';
 import zonaRouter from './router/zonaRouter';
-
+import ZonaCultivoActual from './router/zonaCultivoActualRouter';
 // IMPORTANT!: Import the NEW routers for Authentication and Person Management
 import authRouter from './router/authRouter'; 
 import userRouter from './router/userRouter'; 
@@ -23,10 +23,11 @@ app.use(cors({ origin: 'http://localhost:3000', credentials: true })); // Puerto
 app.use('/api/invernadero', invernaderoRouter);
 app.use('/api/zona', zonaRouter);
 app.use('/api/persona', personaRouter);
-app.use('/api/gestionarCultivos',gestionarCultivoRouter);
+app.use('/api/cultivos',gestionarCultivoRouter);
 app.use('/api/zonaCultivoActual', ZonaCultivoActualRouter);
 app.use('/api/bitacora', bitacoraRouter);
 app.use('/api/imagen', imagenRouter);
+app.use('/api/zonaActual', ZonaCultivoActualRouter);
 
 // Essential Middlewares
 app.use(express.json()); // Enable body-parser for JSON

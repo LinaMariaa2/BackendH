@@ -1,12 +1,7 @@
-//src/index.ts
+// src/index.ts
 import dotenv from 'dotenv';
 dotenv.config(); // Load environment variables at the very beginning!
 
-
-const port = process.env.PORT || 3000; //4000 para pruebas / 3000 para desarrollo
-
-async function startServer(){
-    try{
 console.log('Variables de entorno cargadas:');
 console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'Cargado' : 'NO CARGADO');
 console.log('EMAIL_USER:', process.env.EMAIL_USER);
@@ -39,6 +34,6 @@ async function startServer() {
         process.exit(1); // Exit the process with an error code
     }
 }
-    }
+
 // Call the function to start the server
 startServer();
