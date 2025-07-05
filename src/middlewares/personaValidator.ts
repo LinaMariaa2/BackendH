@@ -29,7 +29,7 @@ export const validatePersonaCreation = [
 
   body('rol')
     .notEmpty().withMessage('El rol es obligatorio')
-    .isIn(['administrador', 'instructor', 'aprendiz']).withMessage('El rol no es válido. Debe ser "administrador", "instructor" o "aprendiz"'),
+    .isIn(['admin', 'operario']).withMessage('El rol no es válido. Debe ser "admin" o "operario"'),
 
   body('estado') 
     .optional() 
@@ -60,7 +60,7 @@ export const validatePersonaUpdate = [
   body('rol')
     .optional()
     .notEmpty().withMessage('El rol no puede estar vacío')
-    .isIn(['administrador', 'instructor', 'aprendiz']).withMessage('El rol no es válido. Debe ser "administrador", "instructor" o "aprendiz"'),
+    .isIn(['admini', 'operario']).withMessage('El rol no es válido. Debe ser "admin","operario" '),
 
   body('estado')
     .optional()

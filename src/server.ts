@@ -15,6 +15,7 @@ import ZonaCultivoActual from './router/zonaCultivoActualRouter';
 import authRouter from './router/authRouter'; 
 import userRouter from './router/userRouter'; 
 
+
 const app = express();
 app.use(express.json());
 app.use(cors({ origin: 'http://localhost:3000', credentials: true })); // Puerto del frontend generalmente en next 3000

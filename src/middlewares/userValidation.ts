@@ -46,7 +46,7 @@ export const validateAdminPersonaCreation = [
     ...validateRegistration.slice(0, -1), // Reutiliza nombre_usuario, correo, contrasena del registro
     body('rol')
         .notEmpty().withMessage('El rol es obligatorio')
-        .isIn(['admin', 'aprendiz']).withMessage('El rol no es válido. Debe ser "admin" o "aprendiz"'),
+        .isIn(['admin', 'operario']).withMessage('El rol no es válido. Debe ser "admin" o "operario"'),
     handleInputErrors
 ];
 
@@ -74,7 +74,7 @@ export const validateAdminPersonaUpdate = [
     body('rol')
         .optional()
         .notEmpty().withMessage('El rol no puede estar vacío si se proporciona')
-        .isIn(['admin', 'aprendiz']).withMessage('El rol no es válido. Debe ser "admin" o "aprendiz"'),
+        .isIn(['admin', 'operario']).withMessage('El rol no es válido. Debe ser "admin" o "operario"'),
 
     body('estado')
         .optional()
