@@ -11,7 +11,7 @@ export const uploadCultivoImage = async (req: Request, res: Response) => {
       return ;
     }
 
-    const nombreArchivo = `cultivos/${Date.now()}_${file.originalname}`;
+    const nombreArchivo = `cultivos/${Date.now()}_${file.originalname}`; 
 
     const { data, error } = await supabase.storage
       .from('cultivos') // Cambia por tu bucket real
