@@ -1,21 +1,55 @@
 import type { Request, Response } from 'express';
 import Persona from '../models/Persona'; 
+import { Op } from 'sequelize'; // Asegúrate de tener esto al inicio del archivo
 //import { PasswordHelper } from '../helpers/passwordHelper'; 
 
 export class PersonaController {
 
   // Obtenemos todas las Personas
-  static getAll = async (req: Request, res: Response): Promise<void> => {
+  static getAll = async (req: Request, res: Response) => {
     try {
+      const filtro = req.query.filtro?.toString().toLowerCase() || "";
+
       const personas = await Persona.findAll({
-        order: [['id_persona', 'ASC']], // Ordenamos por la PK
+        where: {
+          estado: "activo",
+          rol: "operario", 
+          nombre: {
+            [Op.iLike]: `%${filtro}%`, // PostgreSQL case-insensitive LIKE
+          },
+        },
       });
+
       res.json(personas);
-    } catch (error: any) {
-      console.error('Error al obtener las personas:', error);
-      res.status(500).json({ error: 'Error al obtener las personas', details: error.message });
+    } catch (error) {
+      console.error("Error al obtener personas:", error);
+      res.status(500).json({ message: "Error interno" });
     }
   };
+
+  static getOperarios= async (req: Request, res: Response) => {
+  try {
+    const filtro = req.query.filtro?.toString().toLowerCase();
+
+    const whereCond: any = {
+      estado: "activo",
+      rol: "operario",
+    };
+
+    if (filtro && filtro.trim() !== "") {
+      whereCond.nombre = { [Op.iLike]: `%${filtro}%` };
+    }
+
+    const personas = await Persona.findAll({
+      where: whereCond,
+    });
+
+    res.json(personas);
+  } catch (error) {
+    console.error("Error al obtener personas:", error);
+    res.status(500).json({ message: "Error interno" });
+  }
+};
 
   // Personas Activas
   static getAllActivos = async (req: Request, res: Response): Promise<void> => {
@@ -35,20 +69,33 @@ export class PersonaController {
   };
 
   // Mostramos Persona por ID en ruta
-  static getById = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params;
-      const persona = await Persona.findByPk(id);
-      if (!persona) {
-        res.status(404).json({ error: 'Persona no encontrada, ¿estás seguro de que existe?' });
-        return;
-      }
-      res.json(persona);
-    } catch (error: any) {
-      console.error('Error al obtener la persona por ID:', error);
-      res.status(500).json({ error: 'Error al obtener la persona', details: error.message });
+  static async getById(req: Request, res: Response) {
+  try {
+    const idRaw = req.params.id;
+const id = parseInt(idRaw, 10);
+
+if (!idRaw || isNaN(id) || !Number.isInteger(id)) {
+  res.status(400).json({ error: 'ID inválido' });
+}
+
+
+    const persona = await Persona.findByPk(id);
+    if (!persona) {
+      res.status(404).json({ error: 'Persona no encontrada' });
+      return 
     }
-  };
+
+    res.json(persona);
+  } catch (error) {
+    console.error('Error al obtener persona por ID:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+    return ;
+  }
+}
+
+
+
+
 
   // Crear una nueva Persona
   static crearPersona = async (req: Request, res: Response): Promise<void> => {
@@ -240,4 +287,6 @@ export class PersonaController {
       });
     }
   };
+
+  
 }

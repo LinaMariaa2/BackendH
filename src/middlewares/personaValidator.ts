@@ -3,12 +3,6 @@ import { Request, Response, NextFunction } from 'express';
 import Persona from '../models/Persona'; 
 
 
-export const validatePersonaId = [
-  param('id')
-    .isInt({ gt: 0 }).withMessage('El ID de persona debe ser un número entero positivo')
-    .toInt(),
-];
-
 // 2. Validación del cuerpo para la creación de una Persona
 export const validatePersonaCreation = [
   body('nombre_usuario')
@@ -29,11 +23,11 @@ export const validatePersonaCreation = [
 
   body('rol')
     .notEmpty().withMessage('El rol es obligatorio')
-    .isIn(['administrador', 'instructor', 'aprendiz']).withMessage('El rol no es válido. Debe ser "administrador", "instructor" o "aprendiz"'),
+    .isIn(['admin', 'operario']).withMessage('El rol no es válido. Debe ser "administrador", "instructor" o "aprendiz"'),
 
   body('estado') 
     .optional() 
-    .isIn(['activo', 'inactivo', 'bloqueado']).withMessage('El estado no es válido. Debe ser "activo", "inactivo" o "bloqueado"'),
+    .isIn(['activo', 'inactivo', 'mantenimiento']).withMessage('El estado no es válido. Debe ser "activo", "inactivo" o "bloqueado"'),
   
   body('autenticado') 
     .optional() 
@@ -96,3 +90,15 @@ export const validatePersonaCorreoUnico = async (req: Request, res: Response, ne
   }
   next(); // Pasa si el correo es único o si no se envió correo
 };
+
+export const validatePersonaId = [
+  param('id')
+    .isInt({ gt: 0 }).withMessage('El ID debe ser un número entero positivo')
+    .toInt()
+    .custom(async (id) => {
+      const persona = await Persona.findByPk(id);
+      if (!persona) throw new Error('La persona no existe');
+    }),
+];
+
+

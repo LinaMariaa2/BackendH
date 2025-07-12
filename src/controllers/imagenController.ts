@@ -13,6 +13,9 @@ export const uploadCultivoImage = async (req: Request, res: Response) => {
 
     const nombreArchivo = `cultivos/${Date.now()}_${file.originalname}`; 
 
+   // const nombreArchivo = `${Date.now()}_${file.originalname}`;
+
+
     const { data, error } = await supabase.storage
       .from('cultivos') // Cambia por tu bucket real
       .upload(nombreArchivo, file.buffer, {
@@ -27,7 +30,8 @@ export const uploadCultivoImage = async (req: Request, res: Response) => {
     }
 
     // Construimos la URL pública
-    const publicUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/nombre_bucket/${nombreArchivo}`;
+    const publicUrl = `https://yasjwniajgvwkrxyyfrm.supabase.co/storage/v1/object/public/cultivos/${nombreArchivo}`;
+
 
     res.status(200).json({ url: publicUrl });
   } catch (error) {

@@ -6,17 +6,23 @@ import { Persona } from '../models/Persona';
 
 export class bitacoraController {
   // Obtener todas las publicaciones
-  static getAll = async (_req: Request, res: Response) => {
-    try {
-      const publicaciones = await Bitacora.findAll({
-        include: [Invernadero, Zona, Persona],
-        order: [['timestamp_publicacion', 'DESC']],
-      });
-      res.json(publicaciones);
-    } catch (error) {
-      res.status(500).json({ error: 'Error al obtener las publicaciones', details: error });
-    }
-  };
+  // bitacoraController.ts
+static getAll = async (req: Request, res: Response) => {
+  try {
+    const { archivadas } = req.query;
+
+    const publicaciones = await Bitacora.findAll({
+      where: archivadas === 'true' ? { importancia: 'baja' } : {},
+      include: [Invernadero, Zona, Persona],
+      order: [['timestamp_publicacion', 'DESC']],
+    });
+
+    res.json(publicaciones);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener las publicaciones', details: error });
+  }
+};
+
 
   // Obtener publicación por ID
   static getById = async (req: Request, res: Response) => {
@@ -43,6 +49,7 @@ export class bitacoraController {
     } catch (error) {
       res.status(500).json({ error: 'Error al crear la publicación', details: error });
     }
+    console.log("REQ BODY", req.body);
   };
 
   // Actualizar publicación
@@ -117,4 +124,21 @@ export class bitacoraController {
       res.status(500).json({ error: 'Error al archivar la publicación', details: error });
     }
   };
+  // Desarchivar (poner importancia en 'media')
+  static desarchivar = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const publicacion = await Bitacora.findByPk(id);
+      if (!publicacion) {
+        res.status(404).json({ error: 'Publicación no encontrada' });
+        return;
+      }
+      publicacion.importancia = 'media';
+      await publicacion.save();
+      res.json({ mensaje: 'Publicación desarchivada correctamente' });
+    } catch (error) {
+      res.status(500).json({ error: 'Error al desarchivar', details: error });
+    }
+  };
+
 }

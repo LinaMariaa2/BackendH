@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { invernaderoController } from '../controllers/invernaderoController';
-import {validateInvernaderoId, validateInvernaderoNombreUnico, validateInvernaderoBody,} from '../middlewares/invernaderoValidator';
+import {validateInvernaderoId, validateInvernaderoNombreUnico, validateInvernaderoBody, validateInvernaderoUpdate} from '../middlewares/invernaderoValidator';
 import { handleInputErrors } from '../middlewares/validation';
 import { zonaController } from '../controllers/zonaController';
 
@@ -32,11 +32,10 @@ router.post(
 );
 
 router.put(
-  '/:id',
+  '/invernadero/:id',
   validateInvernaderoId,
-  validateInvernaderoBody,
-  validateInvernaderoNombreUnico,
-  handleInputErrors,
+  validateInvernaderoUpdate,
+  handleInputErrors, 
   invernaderoController.actualizarInvernadero
 );
 

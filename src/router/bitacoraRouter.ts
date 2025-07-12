@@ -17,5 +17,7 @@ router.put('/:id', validacionIdBitacora, validacionBitacoraBody, handleInputErro
 router.delete('/:id', validacionIdBitacora, handleInputErrors, bitacoraController.eliminar);
 router.get('/invernadero/:id_invernadero', bitacoraController.getByInvernadero);
 router.patch('/:id/archivar', validacionIdBitacora, handleInputErrors, bitacoraController.archivar);
+router.patch('/:id/desarchivar', validacionIdBitacora, handleInputErrors, bitacoraController.desarchivar);
+
 
 export default router;

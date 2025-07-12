@@ -2,8 +2,6 @@
 import { body, param } from 'express-validator';
 import GestionCultivo from '../models/gestionarCultivos';
 import Zona from '../models/zona';
-import Invernadero from '../models/invernadero';
-
 export const validateCultivoId = [
   param('id')
     .isInt({ gt: 0 }).withMessage('ID inválido')
@@ -32,19 +30,14 @@ export const validateCultivoBody = [
     .notEmpty().withMessage('Fecha de inicio obligatoria')
     .isISO8601().toDate().withMessage('Formato de fecha inválido'),
 
-  body('id_zona')
-    .notEmpty().withMessage('Zona requerida')
-    .isInt({ gt: 0 }).toInt()
-    .custom(async (id) => {
-      const zona = await Zona.findByPk(id);
-      if (!zona) throw new Error('Zona no encontrada');
-    }),
+    body('id_zona')
+  .optional({ nullable: true })
+  .isInt({ gt: 0 }).toInt()
+  .custom(async (id) => {
+    const zona = await Zona.findByPk(id);
+    if (!zona) throw new Error('Zona no encontrada');
+  }),
 
-  body('id_invernadero')
-    .notEmpty().withMessage('Invernadero requerido')
-    .isInt({ gt: 0 }).toInt()
-    .custom(async (id) => {
-      const inv = await Invernadero.findByPk(id);
-      if (!inv) throw new Error('Invernadero no encontrado');
-    }),
+ 
+
 ];

@@ -24,6 +24,33 @@ export const validateInvernaderoNombreUnico = [
     }),
 ];
 
+export const validateInvernaderoUpdate = [
+  body('nombre')
+    .optional()
+    .isLength({ max: 50 }).withMessage('Máximo 50 caracteres en el nombre'),
+
+  body('descripcion')
+    .optional()
+    .isString().withMessage('La descripción debe ser texto'),
+
+  body('estado')
+    .optional()
+    .isIn(['activo', 'inactivo', 'mantenimiento'])
+    .withMessage('El estado debe ser válido'),
+
+  body('responsable_id')
+    .optional()
+    .isInt({ gt: 0 }).withMessage('El responsable debe ser un número positivo')
+    .custom(async (id) => {
+      const persona = await Persona.findByPk(id);
+      if (!persona) throw new Error('El responsable no existe');
+      if (persona.estado !== 'activo') throw new Error('El responsable debe estar activo');
+      if (!['admin', 'operario'].includes(persona.rol)) {
+        throw new Error('El responsable debe ser admin u operario');
+      }
+    }),
+];
+
 export const validateInvernaderoBody = [
   body('nombre')
     .notEmpty().withMessage('El nombre es obligatorio')
@@ -45,8 +72,8 @@ export const validateInvernaderoBody = [
       const persona = await Persona.findByPk(id);
       if (!persona) throw new Error('El responsable no existe');
       if (persona.estado !== 'activo') throw new Error('El responsable debe estar activo');
-      if (!['admin', 'superadmin'].includes(persona.rol)) {
-        throw new Error('El responsable debe tener rol de admin o superadmin');
+      if (!['admin', 'operario'].includes(persona.rol)) {
+        throw new Error('El responsable debe tener rol de admin o operario');
       }
-  }),
+ }),
 ];

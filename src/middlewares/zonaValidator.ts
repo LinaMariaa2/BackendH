@@ -36,15 +36,20 @@ export const validateInvernaderoExistente = [
     .notEmpty().withMessage('Debes especificar un invernadero')
     .isInt({ gt: 0 }).withMessage('El ID del invernadero debe ser un número positivo')
     .custom(async (id: number) => {
+      console.log("🧪 Validando invernadero ID:", id); // <--- Nuevo log
       const invernadero = await Invernadero.findByPk(id);
       if (!invernadero) {
+        console.log("❌ No existe el invernadero con ID", id);
         throw new Error('El invernadero no existe');
       }
+
       if (invernadero.estado !== 'activo') {
+        console.log("⚠️ Invernadero inactivo");
         throw new Error('El invernadero debe estar activo para asignarle zonas');
       }
 
       const totalZonas = await Zona.count({ where: { id_invernadero: id } });
+      console.log(`📊 El invernadero tiene ${totalZonas} zonas actualmente`);
       if (totalZonas >= 5) {
         throw new Error('El invernadero ya tiene el número máximo de zonas (5)');
       }
@@ -52,6 +57,7 @@ export const validateInvernaderoExistente = [
       return true;
     })
 ];
+
 
 
 export const validateZonaBody = [
@@ -67,4 +73,12 @@ export const validateZonaBody = [
     .notEmpty().withMessage('El estado es obligatorio')
     .isIn(['activo', 'inactivo', 'mantenimiento'])
     .withMessage('El estado debe ser: "activo", "inactivo" o "mantenimiento"'),
+    
+  body('id_cultivo')
+  .custom((value) => {
+    if (value === null || value === undefined) return true; // ✅ permitir null o no enviado
+    if (Number.isInteger(value) && value > 0) return true;  // ✅ si es entero positivo
+    throw new Error('El ID del cultivo debe ser un número positivo o nulo');
+  }),
 ];
+

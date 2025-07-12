@@ -32,26 +32,30 @@ export class gestionCultivoController {
 
   static cambiarEstado = async (req: Request, res: Response) => {
   const { id, estado } = req.params;
+
   if (!['activo', 'finalizado'].includes(estado)) {
-     res.status(400).json({ error: 'Estado no válido' });
-     return;
+    res.status(400).json({ error: 'Estado no válido' });
+    return ;
   }
 
   try {
     const cultivo = await GestionCultivo.findByPk(id);
     if (!cultivo) {
       res.status(404).json({ error: 'Cultivo no encontrado' });
-      return 
+      return ;
     }
 
     cultivo.estado = estado;
     await cultivo.save();
 
-    res.json({ mensaje: `Estado cambiado a ${estado}`, cultivo });
+     res.json({ mensaje: 'Estado actualizado', cultivo });
+     return ;
   } catch (error) {
-    res.status(500).json({ error: 'Error al cambiar estado del cultivo', details: error });
+     res.status(500).json({ error: 'Error al cambiar el estado', details: error });
+     return;
   }
 };
+
 
   // Obtener cultivos por zona
   static getPorZona = async (req: Request, res: Response) => {
@@ -76,14 +80,12 @@ export class gestionCultivoController {
       });
 
       // Actualiza el cultivo actual de la zona (si usas zonaCultivoActual o similar)
-      await Zona.update(
-        { id_cultivo_actual: cultivo.id_cultivo },
-        { where: { id_zona: cultivo.id_zona } }
-      );
-
+  
       res.status(201).json({ mensaje: 'Cultivo registrado correctamente', cultivo });
     } catch (error) {
       res.status(500).json({ error: 'Error al registrar cultivo', details: error });
     }
+    console.log("📥 Datos recibidos:", req.body);
   };
+  
 }
