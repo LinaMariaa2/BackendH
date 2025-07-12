@@ -1,20 +1,19 @@
 import { Router } from 'express';
-import { zonaController,  } from '../controllers/zonaController';
-import { validateZonaId, validateZonaNombreUnico, validateZonaBody, validateInvernaderoExistente} from '../middlewares/zonaValidator';
+import { zonaController } from '../controllers/zonaController';
+import {
+  validateZonaId,
+  validateZonaNombreUnico,
+  validateZonaBody,
+  validateInvernaderoExistente,
+} from '../middlewares/zonaValidator';
 import { handleInputErrors } from '../middlewares/validation';
 
-
 const router = Router();
-router.get('/', zonaController.getAll);
 
+router.get('/', zonaController.getAll);
 router.get('/todos', zonaController.getAllActivos);
 router.get('/invernadero/:id', zonaController.getZonasPorInvernadero);
 
-router.get('/zonaActual/:id/estado-real', zonaController.obtenerCultivoActualPorZona);
-
-router.get('/:id_zona', validateZonaId, handleInputErrors, zonaController.getById);
-
-// Crear nueva zona (solo si invernadero está activo y tiene < 5 zonas)
 router.post(
   '/',
   validateZonaBody,
@@ -25,7 +24,7 @@ router.post(
 );
 
 router.put(
-  '/:id',
+  '/:id_zona',
   validateZonaId,
   validateZonaBody,
   validateZonaNombreUnico,
@@ -33,38 +32,12 @@ router.put(
   zonaController.actualizarZona
 );
 
-router.patch(
-  '/:id/estado',
-  validateZonaId,
-  handleInputErrors,
-  zonaController.cambiarEstadoGenerico
-);
-router.patch(
-  '/inactivar/:id',
-  validateZonaId,
-  handleInputErrors,
-  zonaController.inactivarZona
-);
+router.patch('/cambiar-estado/:id_zona', zonaController.cambiarEstadoGenerico);
 
-router.patch(
-  '/activar/:id',
-  validateZonaId,
-  handleInputErrors,
-  zonaController.activarZona
-);
+router.patch('/inactivar/:id_zona', validateZonaId, handleInputErrors, zonaController.inactivarZona);
+router.patch('/activar/:id_zona', validateZonaId, handleInputErrors, zonaController.activarZona);
+router.patch('/mantenimiento/:id_zona', validateZonaId, handleInputErrors, zonaController.mantenimientoZona);
 
-router.patch(
-  '/mantenimiento/:id',
-  validateZonaId,
-  handleInputErrors,
-  zonaController.mantenimientoZona
-);
-
-router.delete( 
-    '/:id',
-    validateZonaId,
-    handleInputErrors,
-    zonaController.eliminarZona
-);
+router.delete('/:id_zona', validateZonaId, handleInputErrors, zonaController.eliminarZona);
 
 export default router;

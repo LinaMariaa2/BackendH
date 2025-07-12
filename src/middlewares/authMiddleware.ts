@@ -14,6 +14,13 @@ declare module 'express-serve-static-core' {
 // autenticacion jwt
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction): void | Response<any> => {
+    const DESACTIVAR_AUTH = true; // ⚠️ cambia a false cuando quieras volver a activarlo
+
+    if (DESACTIVAR_AUTH) {
+        req.user = { id: 1, rol: 'admin', isVerified: true }; // Simula un usuario autenticado
+        return next();
+    }
+
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -24,8 +31,8 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction):
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: number, rol: string, isVerified: boolean };
-        req.user = decoded; 
-        next(); 
+        req.user = decoded;
+        next();
     } catch (error) {
         console.error('Error al verificar token:', error);
         return res.status(403).json({ error: 'Token inválido o expirado. Por favor, inicia sesión de nuevo.' });

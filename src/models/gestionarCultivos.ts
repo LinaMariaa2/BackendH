@@ -12,9 +12,8 @@ import {
   AllowNull
 } from 'sequelize-typescript';
 import Zona from './zona';
-import Invernadero from './invernadero';
 
-@Table({ tableName: 'tbl_gestion_cultivos'})
+@Table({ tableName: 'tbl_gestion_cultivos', timestamps: true })
 export class GestionCultivo extends Model {
   @PrimaryKey
   @AutoIncrement
@@ -44,29 +43,30 @@ export class GestionCultivo extends Model {
   declare fecha_inicio: Date;
 
   @Column(DataType.DATE)
-  declare fecha_fin: Date;
+  declare fecha_fin?: Date;
 
   @Column(DataType.ENUM('activo', 'finalizado'))
   declare estado: string;
+
   @Column(DataType.TEXT)
   declare imagenes: string;
 
-
+  // ✅ Relación con Zona (requerida por el modelo Zona para @HasMany)
   @ForeignKey(() => Zona)
-  @Column
-  declare id_zona: number;
+  @AllowNull(true) // si quieres que sea opcional
+  @Column(DataType.INTEGER)
+  declare id_zona: number | null;
 
   @BelongsTo(() => Zona)
-  declare zona: Zona;
+  declare zona?: Zona;
 
   @CreatedAt
-  @Column({ field: 'created_at' }) // si quieres el nombre en snake_case
+  @Column({ field: 'created_at' })
   declare createdAt: Date;
 
   @UpdatedAt
   @Column({ field: 'updated_at' })
   declare updatedAt: Date;
-
 }
 
 export default GestionCultivo;

@@ -2,7 +2,7 @@ import { Table,Column,Model,HasMany,DataType,PrimaryKey,AutoIncrement,CreatedAt,
 import { Persona } from './Persona';
 import { Zona } from './zona';
 
-@Table({ tableName: 'tbl_invernadero', timestamps: true })
+@Table({ tableName: 'tbl_invernadero', timestamps: true, underscored: true })
 export class Invernadero extends Model {
   @PrimaryKey
   @AutoIncrement

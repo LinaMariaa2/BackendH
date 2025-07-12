@@ -3,7 +3,7 @@ import { Invernadero } from './invernadero';
 import { Zona } from './zona';
 import { Persona } from './Persona';
 
-@Table({tableName: 'tbl_bitacora'})
+@Table({tableName: 'tbl_bitacora', timestamps: true})
 export class Bitacora extends Model {
   @PrimaryKey
   @AutoIncrement
@@ -55,13 +55,11 @@ export class Bitacora extends Model {
   declare timestamp_publicacion: Date;
 
   @CreatedAt
-  @Default(DataType.NOW)
-  @Column({ type: DataType.DATE })
-  declare created_at: Date;
-
-  @UpdatedAt
-  @Default(DataType.NOW)
-  @Column({ type: DataType.DATE })
-  declare updated_at: Date;
+    @Column({ field: 'created_at' })
+    declare createdAt: Date;
+  
+    @UpdatedAt
+    @Column({ field: 'updated_at' })
+    declare updatedAt: Date;
 }
 export default Bitacora;
