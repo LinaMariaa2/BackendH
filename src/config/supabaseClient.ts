@@ -21,3 +21,4 @@ if (!supabaseServiceKey) {
 export const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 console.log('DEBUG: Cliente de Supabase inicializado con Service Role Key.');
+//s
