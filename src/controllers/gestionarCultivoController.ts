@@ -87,5 +87,41 @@ export class gestionCultivoController {
     }
     console.log("📥 Datos recibidos:", req.body);
   };
+
+  static eliminarCultivo = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const cultivo = await GestionCultivo.findByPk(id);
+    if (!cultivo) {
+      res.status(404).json({ error: 'Cultivo no encontrado' });
+      return ;
+    }
+
+    await cultivo.destroy();
+    res.json({ mensaje: 'Cultivo eliminado correctamente' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar cultivo', details: error });
+  }
+};
+
+static actualizarCultivo = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const cultivo = await GestionCultivo.findByPk(id);
+
+    if (!cultivo) {
+      res.status(404).json({ error: "Cultivo no encontrado" });
+      return ;
+    }
+
+    await cultivo.update(req.body);
+     res.json({ mensaje: "Cultivo actualizado", cultivo });
+     return;
+  } catch (error) {
+    res.status(500).json({ error: "Error al actualizar cultivo", details: error });
+    return;
+  }
+};
+
   
 }

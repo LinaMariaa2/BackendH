@@ -43,9 +43,13 @@ export class Zona extends Model {
   @BelongsTo(() => Invernadero)
   declare invernadero: Invernadero;
 
-  // Cultivo actual referenciado (opcional)
- @HasMany(() => GestionCultivo)
-  declare cultivos: GestionCultivo[];
+  @ForeignKey(() => GestionCultivo)
+@AllowNull(true)
+@Column(DataType.INTEGER)
+declare id_cultivo: number | null;
+
+@BelongsTo(() => GestionCultivo)
+declare cultivo: GestionCultivo;
 
   @CreatedAt
   @Column({ field: 'created_at', type: DataType.DATE })

@@ -32,7 +32,7 @@ router.post(
 );
 
 router.put(
-  '/invernadero/:id',
+  '/:id',
   validateInvernaderoId,
   validateInvernaderoUpdate,
   handleInputErrors, 

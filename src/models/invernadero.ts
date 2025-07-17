@@ -41,7 +41,7 @@ declare estado: 'activo' | 'inactivo' | 'mantenimiento';
 })
 declare responsable_id: number;
 
-@BelongsTo(() => Persona, { foreignKey: 'responsable_id' })
+@BelongsTo(() => Persona, { foreignKey: 'responsable_id', as:'encargado' })
 declare persona: Persona;
 
   @HasMany(() => Zona, { foreignKey: 'id_invernadero' })

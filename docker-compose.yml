@@ -1,0 +1,13 @@
+#configuracion con yaml para automatizar procesos y crear el contendor la imagen y ponerlo en ejcucion de una evz 
+
+version: "3.9"
+
+services:
+  backend:
+    build: .
+    ports:
+      - "4000:4000"
+    #links: frontend 
+    #image: backend:1 si queremos utilizar la que ya creamos de prueba
+    restart: always # hace que el contenedor se reinicie automáticamente si se detiene
+

@@ -17,7 +17,9 @@ export const validateZonaNombreUnico = [
     .notEmpty().withMessage('El nombre no puede estar vacío')
     .isLength({ max: 100 }).withMessage('El nombre puede tener máximo 100 caracteres')
     .custom(async (value, { req }) => {
-      const idZonaActual = req.params?.id || null;
+    
+      const idZonaActual = req.params?.id_zona || null;
+
       const idInvernadero = req.body.id_invernadero;
       const zonaExistente = await Zona.findOne({
         where: {

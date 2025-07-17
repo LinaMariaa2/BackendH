@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import Invernadero from '../models/invernadero';
 import Zona from '../models/zona';
 import { actualizarConteoZonas } from '../helpers/actualizarConteoZona';
+import { Persona } from '../models/Persona';
 
 export class invernaderoController {
 
@@ -17,13 +18,21 @@ export class invernaderoController {
       await actualizarConteoZonas(inv.id_invernadero);
     }
 
-    // 🔁 Recupera los invernaderos actualizados con conteos correctos
+    // ✅ Recupera los invernaderos actualizados e incluye los datos del responsable
     const actualizados = await Invernadero.findAll({
+      include: [
+        {
+          model: Persona,
+          as: 'encargado', // <-- asegúrate que el alias coincida con tu modelo
+          attributes: ['id_persona', 'nombre_usuario', 'rol', 'estado'],
+        },
+      ],
       order: [['id_invernadero', 'ASC']],
     });
 
     res.json(actualizados);
   } catch (error) {
+    console.error('❌ Error al obtener invernaderos:', error);
     res.status(500).json({
       error: 'Error al obtener los invernaderos',
       details: error,
@@ -74,12 +83,13 @@ export class invernaderoController {
   };
 
   // Crear un nuevo invernadero con limite de 5 maximo
-  static crearInvernadero = async (req: Request, res: Response) => {
+
+static crearInvernadero = async (req: Request, res: Response) => {
   try {
     const totalInvernaderos = await Invernadero.count();
     if (totalInvernaderos >= 6) {
       res.status(400).json({ error: 'No se pueden crear más de 5 invernaderos' });
-      return ;
+      return;
     }
 
     const {
@@ -91,8 +101,8 @@ export class invernaderoController {
     } = req.body;
 
     if (!responsable_id) {
-      res.status(400).json({ error: 'Falta el campo responsable_id' });
-      return;
+       res.status(400).json({ error: 'Falta el campo responsable_id' });
+       return;
     }
 
     const nuevoInvernadero = await Invernadero.create({
@@ -103,15 +113,23 @@ export class invernaderoController {
       responsable_id,
     });
 
-    res.status(201).json(nuevoInvernadero);
+    // 🔁 Volvemos a buscar el invernadero con include para traer al responsable
+    const invernaderoConResponsable = await Invernadero.findByPk(nuevoInvernadero.id_invernadero, {
+  include: [{ model: Persona, as: 'encargado' }],
+});
+res.status(201).json(invernaderoConResponsable);
+
   } catch (error: any) {
+    console.error("Error al crear el invernadero:", error);
     res.status(500).json({
       error: 'Error al crear el invernadero',
       details: error.message,
     });
   }
+
   console.log("REQ.BODY:", req.body);
 };
+
 
 static cambiarEstadoGenerico = async (req: Request, res: Response) => {
   try {

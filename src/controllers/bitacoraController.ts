@@ -3,6 +3,8 @@ import { Bitacora } from '../models/bitacora';
 import { Invernadero } from '../models/invernadero';
 import { Zona } from '../models/zona';
 import { Persona } from '../models/Persona';
+import { Op } from 'sequelize';
+
 
 export class bitacoraController {
   // Obtener todas las publicaciones
@@ -12,7 +14,9 @@ static getAll = async (req: Request, res: Response) => {
     const { archivadas } = req.query;
 
     const publicaciones = await Bitacora.findAll({
-      where: archivadas === 'true' ? { importancia: 'baja' } : {},
+      where: archivadas === 'true'
+        ? { archivada: true }
+        : { archivada: false },
       include: [Invernadero, Zona, Persona],
       order: [['timestamp_publicacion', 'DESC']],
     });
@@ -22,6 +26,8 @@ static getAll = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Error al obtener las publicaciones', details: error });
   }
 };
+
+
 
 
   // Obtener publicación por ID
@@ -108,37 +114,39 @@ static getAll = async (req: Request, res: Response) => {
   
   // Archivar publicación (cambia importancia a 'baja')
   static archivar = async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const publicacion = await Bitacora.findByPk(id);
-      if (!publicacion) {
-        res.status(404).json({ error: 'Publicación no encontrada' });
-         return ;
-      }
-
-      publicacion.importancia = 'baja';
-      await publicacion.save();
-
-      res.json({ mensaje: 'Publicación archivada correctamente' });
-    } catch (error) {
-      res.status(500).json({ error: 'Error al archivar la publicación', details: error });
+  try {
+    const { id } = req.params;
+    const publicacion = await Bitacora.findByPk(id);
+    if (!publicacion) {
+      res.status(404).json({ error: 'Publicación no encontrada' });
+      return ;
     }
-  };
+
+    publicacion.archivada = true;
+    await publicacion.save();
+
+    res.json({ mensaje: 'Publicación archivada correctamente' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al archivar la publicación', details: error });
+  }
+};
+
   // Desarchivar (poner importancia en 'media')
-  static desarchivar = async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const publicacion = await Bitacora.findByPk(id);
-      if (!publicacion) {
-        res.status(404).json({ error: 'Publicación no encontrada' });
-        return;
-      }
-      publicacion.importancia = 'media';
-      await publicacion.save();
-      res.json({ mensaje: 'Publicación desarchivada correctamente' });
-    } catch (error) {
-      res.status(500).json({ error: 'Error al desarchivar', details: error });
+static desarchivar = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const publicacion = await Bitacora.findByPk(id);
+    if (!publicacion) {
+      res.status(404).json({ error: 'Publicación no encontrada' });
+      return ;
     }
-  };
 
+    publicacion.archivada = false;
+    await publicacion.save();
+
+    res.json({ mensaje: 'Publicación desarchivada correctamente' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al desarchivar', details: error });
+  }
+};
 }

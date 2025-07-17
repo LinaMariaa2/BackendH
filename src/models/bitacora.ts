@@ -50,6 +50,10 @@ export class Bitacora extends Model {
   @BelongsTo(() => Persona)
   declare autor: Persona;
 
+  @Default(false) // por defecto no está archivada
+  @Column(DataType.BOOLEAN)
+  declare archivada: boolean;
+
   @Default(DataType.NOW)
   @Column(DataType.DATE)
   declare timestamp_publicacion: Date;

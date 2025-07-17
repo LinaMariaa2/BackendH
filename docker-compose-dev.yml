@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "4000:4000"
+    volumes:
+      - .:/home/app
+      - /home/app/node_modules  # evita conflictos entre node_modules local y del contenedor
+    restart: always
+    container_name: backendp
