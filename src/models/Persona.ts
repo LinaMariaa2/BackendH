@@ -1,6 +1,6 @@
-// src/models/Persona.ts
-import { Table, Column, DataType, PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt, Default, AllowNull, Unique } from 'sequelize-typescript';
-import { Model } from 'sequelize-typescript';
+import { Table, Column, DataType, PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt, Default, AllowNull, HasOne } from 'sequelize-typescript';
+import { Model } from 'sequelize-typescript'; 
+import Perfil from './Perfil'; // Importa el modelo Perfil para la relación
 
 @Table({ tableName: 'tbl_persona', timestamps: true })
 export class Persona extends Model {
@@ -58,6 +58,10 @@ export class Persona extends Model {
   @UpdatedAt
   @Column({ field: 'updated_at' })
   declare updatedAt: Date;
+
+  // Define la relación uno a uno con Perfil
+  @HasOne(() => Perfil, { foreignKey: 'personaId', as: 'perfil' }) 
+  declare perfil: Perfil; 
 }
 
 export default Persona;
