@@ -1,0 +1,21 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const invernaderoController_1 = require("../controllers/invernaderoController");
+const invernaderoValidator_1 = require("../middlewares/invernaderoValidator");
+const validation_1 = require("../middlewares/validation");
+const zonaController_1 = require("../controllers/zonaController");
+const router = (0, express_1.Router)();
+router.get('/', invernaderoController_1.invernaderoController.getAll);
+router.get('/activos', invernaderoController_1.invernaderoController.getAllActivos);
+router.get('/:id/zonas', invernaderoValidator_1.validateInvernaderoId, validation_1.handleInputErrors, zonaController_1.zonaController.getZonasPorInvernadero);
+router.get('/:id', invernaderoValidator_1.validateInvernaderoId, validation_1.handleInputErrors, invernaderoController_1.invernaderoController.getId);
+router.post('/', invernaderoValidator_1.validateInvernaderoBody, invernaderoValidator_1.validateInvernaderoNombreUnico, validation_1.handleInputErrors, invernaderoController_1.invernaderoController.crearInvernadero);
+router.put('/:id', invernaderoValidator_1.validateInvernaderoId, invernaderoValidator_1.validateInvernaderoUpdate, validation_1.handleInputErrors, invernaderoController_1.invernaderoController.actualizarInvernadero);
+router.patch('/inactivar/:id', invernaderoValidator_1.validateInvernaderoId, validation_1.handleInputErrors, invernaderoController_1.invernaderoController.inactivarInvernadero);
+router.patch('/activar/:id', invernaderoValidator_1.validateInvernaderoId, validation_1.handleInputErrors, invernaderoController_1.invernaderoController.activarInvernadero);
+router.patch('/mantenimiento/:id', invernaderoValidator_1.validateInvernaderoId, validation_1.handleInputErrors, invernaderoController_1.invernaderoController.mantenimientoInvernadero);
+router.patch('/:id/estado', invernaderoValidator_1.validateInvernaderoId, validation_1.handleInputErrors, invernaderoController_1.invernaderoController.cambiarEstadoGenerico);
+router.delete('/:id', invernaderoValidator_1.validateInvernaderoId, validation_1.handleInputErrors, invernaderoController_1.invernaderoController.eliminarInvernadero);
+exports.default = router;
+//# sourceMappingURL=invernaderoRouter.js.map
