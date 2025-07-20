@@ -39,7 +39,8 @@ import zonaRouter from './router/zonaRouter';
 import authRouter from './router/authRouter';
 import perfilRouter from './router/perfilRouter';
 import personaRouter from './router/personaRouter';
-
+import programacionIluminacionRouter from './router/programacionIluminacionRouter';
+import programacionRiegoRouter from './router/programacionRiegoRouter'
 // Definición de Rutas (Endpoints)
 console.log('DEBUG: Definiendo rutas...');
 
@@ -50,7 +51,8 @@ app.use('/api/bitacora', bitacoraRouter);
 app.use('/api/imagen', imagenRouter);
 app.use('/api/perfil', perfilRouter);
 app.use('/api/persona', personaRouter);
-
+app.use('/api/programacionIluminacion', programacionIluminacionRouter);
+app.use('/api/programacionRiego', programacionRiegoRouter);
 
 // Ruta de autenticación para login, registro, etc.
 app.use('/api/auth', authRouter);
