@@ -14,6 +14,9 @@ import ZonaCultivoActual from './router/zonaCultivoActualRouter';
 // IMPORTANT!: Import the NEW routers for Authentication and Person Management
 import authRouter from './router/authRouter'; 
 import userRouter from './router/userRouter'; 
+import programacionIluminacionRouter from './router/programacionIluminacionRouter';
+import programacionRiegoRouter from './router/programacionRiegoRouter'
+
 
 const app = express();
 app.use(express.json());
@@ -28,10 +31,12 @@ app.use('/api/zonaCultivoActual', ZonaCultivoActualRouter);
 app.use('/api/bitacora', bitacoraRouter);
 app.use('/api/imagen', imagenRouter);
 app.use('/api/zonaActual', ZonaCultivoActualRouter);
+app.use('/api/programacionIluminacion', programacionIluminacionRouter);
+app.use('/api/programacionRiego', programacionRiegoRouter);
 
-// Essential Middlewares
-app.use(express.json()); // Enable body-parser for JSON
-app.use(cors({ origin: 'http://localhost:3000', credentials: true })); // Configure CORS for your frontend
+
+
+
 
 // Logging Middleware (optional, but useful for debugging in development)
 app.use(morgan('dev'));
