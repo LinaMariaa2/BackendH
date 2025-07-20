@@ -38,6 +38,7 @@ import imagenRouter from './router/imagenRouter';
 import zonaRouter from './router/zonaRouter';
 import authRouter from './router/authRouter';
 import perfilRouter from './router/perfilRouter';
+import personaRouter from './router/personaRouter';
 
 // Definición de Rutas (Endpoints)
 console.log('DEBUG: Definiendo rutas...');
@@ -48,6 +49,8 @@ app.use('/api/cultivos', gestionarCultivoRouter);
 app.use('/api/bitacora', bitacoraRouter);
 app.use('/api/imagen', imagenRouter);
 app.use('/api/perfil', perfilRouter);
+app.use('/api/persona', personaRouter);
+
 
 // Ruta de autenticación para login, registro, etc.
 app.use('/api/auth', authRouter);

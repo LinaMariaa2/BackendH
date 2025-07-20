@@ -13,10 +13,15 @@ static getAll = async (req: Request, res: Response) => {
   try {
     const { archivadas } = req.query;
 
+    let whereClause = {};
+    if (archivadas === 'true') {
+      whereClause = { archivada: true };
+    } else if (archivadas === 'false') {
+      whereClause = { archivada: false };
+    }
+
     const publicaciones = await Bitacora.findAll({
-      where: archivadas === 'true'
-        ? { archivada: true }
-        : { archivada: false },
+      where: whereClause,
       include: [Invernadero, Zona, Persona],
       order: [['timestamp_publicacion', 'DESC']],
     });
@@ -26,8 +31,6 @@ static getAll = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Error al obtener las publicaciones', details: error });
   }
 };
-
-
 
 
   // Obtener publicación por ID

@@ -14,7 +14,7 @@ export class PersonaController {
         where: {
           estado: "activo",
           rol: "operario", 
-          nombre: {
+          nombre_usuario: {
             [Op.iLike]: `%${filtro}%`, // PostgreSQL case-insensitive LIKE
           },
         },
@@ -37,7 +37,7 @@ export class PersonaController {
     };
 
     if (filtro && filtro.trim() !== "") {
-      whereCond.nombre = { [Op.iLike]: `%${filtro}%` };
+      whereCond.nombre_usuario = { [Op.iLike]: `%${filtro}%` };
     }
 
     const personas = await Persona.findAll({
