@@ -11,10 +11,15 @@ class bitacoraController {
     static getAll = async (req, res) => {
         try {
             const { archivadas } = req.query;
+            let whereClause = {};
+            if (archivadas === 'true') {
+                whereClause = { archivada: true };
+            }
+            else if (archivadas === 'false') {
+                whereClause = { archivada: false };
+            }
             const publicaciones = await bitacora_1.Bitacora.findAll({
-                where: archivadas === 'true'
-                    ? { archivada: true }
-                    : { archivada: false },
+                where: whereClause,
                 include: [invernadero_1.Invernadero, zona_1.Zona, Persona_1.Persona],
                 order: [['timestamp_publicacion', 'DESC']],
             });

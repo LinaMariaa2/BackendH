@@ -21,5 +21,5 @@ RUN npm run build
 # Exponemos el puerto
 EXPOSE 4000
 
-# Comando de inicio (ejecuta el archivo compilado en dist)
+# Comando de inicio (ejecuta el archivo compilado en dist) actualizar ese dist
 CMD ["npm", "run", "start"]

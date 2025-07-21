@@ -18,4 +18,5 @@ if (!supabaseServiceKey) {
 // Crea y exporta el cliente de Supabase usando la Service Role Key para operaciones de backend
 exports.supabase = (0, supabase_js_1.createClient)(supabaseUrl, supabaseServiceKey);
 console.log('DEBUG: Cliente de Supabase inicializado con Service Role Key.');
+//s
 //# sourceMappingURL=supabaseClient.js.map

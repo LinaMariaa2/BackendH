@@ -16,7 +16,7 @@ class PersonaController {
                 where: {
                     estado: "activo",
                     rol: "operario",
-                    nombre: {
+                    nombre_usuario: {
                         [sequelize_1.Op.iLike]: `%${filtro}%`, // PostgreSQL case-insensitive LIKE
                     },
                 },
@@ -36,7 +36,7 @@ class PersonaController {
                 rol: "operario",
             };
             if (filtro && filtro.trim() !== "") {
-                whereCond.nombre = { [sequelize_1.Op.iLike]: `%${filtro}%` };
+                whereCond.nombre_usuario = { [sequelize_1.Op.iLike]: `%${filtro}%` };
             }
             const personas = await Persona_1.default.findAll({
                 where: whereCond,

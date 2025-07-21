@@ -33,6 +33,9 @@ const imagenRouter_1 = __importDefault(require("./router/imagenRouter"));
 const zonaRouter_1 = __importDefault(require("./router/zonaRouter"));
 const authRouter_1 = __importDefault(require("./router/authRouter"));
 const perfilRouter_1 = __importDefault(require("./router/perfilRouter"));
+const personaRouter_1 = __importDefault(require("./router/personaRouter"));
+const programacionIluminacionRouter_1 = __importDefault(require("./router/programacionIluminacionRouter"));
+const programacionRiegoRouter_1 = __importDefault(require("./router/programacionRiegoRouter"));
 // Definición de Rutas (Endpoints)
 console.log('DEBUG: Definiendo rutas...');
 app.use('/api/invernadero', invernaderoRouter_1.default);
@@ -41,6 +44,9 @@ app.use('/api/cultivos', gestionarCultivoRouter_1.default);
 app.use('/api/bitacora', bitacoraRouter_1.default);
 app.use('/api/imagen', imagenRouter_1.default);
 app.use('/api/perfil', perfilRouter_1.default);
+app.use('/api/persona', personaRouter_1.default);
+app.use('/api/programacionIluminacion', programacionIluminacionRouter_1.default);
+app.use('/api/programacionRiego', programacionRiegoRouter_1.default);
 // Ruta de autenticación para login, registro, etc.
 app.use('/api/auth', authRouter_1.default);
 console.log('DEBUG: Ruta /api/auth configurada con authRouter.');

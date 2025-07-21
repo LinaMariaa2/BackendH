@@ -1,14 +1,27 @@
 version: "3.9"
 
+# Tenemos 2 servicios: frontend y backend
 services:
   backend:
-    build: 
-      context: .
+    build:
+      context: ./backendprueba
       dockerfile: Dockerfile.dev
     ports:
       - "4000:4000"
+    #Utilizamos volumnes porque como estamos en desarrollo y se vana realizar cmabios necesitamos 
+    #que se actulize el contenedor y el necesita tener ese puente
     volumes:
-      - .:/home/app
-      - /home/app/node_modules  # evita conflictos entre node_modules local y del contenedor
+      - ./backendprueba:/home/app # nos permite ver los cambios del código local en el contenedor, que se este renderizando
+      - /home/app/node_modules #Evita sobrescribir los node_module del contenedor con los locales que pueden estar mal o no existir
     restart: always
-    container_name: backendp
+
+  frontend:
+    build:
+      context: ./frontend-proyecto
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend-proyecto:/app
+      - /app/node_modules
+    restart: always
