@@ -2,27 +2,28 @@ import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
 import { Request, Response, NextFunction } from 'express';
-import dotenv from 'dotenv'; 
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 console.log('DEBUG: Iniciando configuración de Express...');
 
-const app = express();
+// Eliminar la segunda declaración de 'app'
+const app = express(); // Esta es la única declaración necesaria
 
-app.use(express.json()); 
 console.log('DEBUG: Middleware express.json() aplicado.');
+app.use(express.json());
 
-
-app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000', 
-    credentials: true 
-}));
 console.log('DEBUG: Middleware CORS aplicado con origen:', process.env.FRONTEND_URL || 'http://localhost:3000');
+app.use(cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    credentials: true
+}));
 
-
-app.use(morgan('dev')); 
 console.log('DEBUG: Middleware Morgan para logging aplicado.');
+app.use(morgan('dev'));
 
-
+// Importación de Routers
 import invernaderoRouter from './router/invernaderoRouter';
 import userRouter from './router/userRouter';
 import gestionarCultivoRouter from './router/gestionarCultivoRouter';
@@ -33,12 +34,12 @@ import authRouter from './router/authRouter';
 import perfilRouter from './router/perfilRouter';
 import personaRouter from './router/personaRouter';
 import programacionIluminacionRouter from './router/programacionIluminacionRouter';
-import programacionRiegoRouter from './router/programacionRiegoRouter'
-import historialRouter from './router/historialRouter'
-
+import programacionRiegoRouter from './router/programacionRiegoRouter';
+import historialRouter from './router/historialRouter';
 
 console.log('DEBUG: Definiendo rutas...');
 
+// Montaje de Routers
 app.use('/api/invernadero', invernaderoRouter);
 app.use('/api/zona', zonaRouter);
 app.use('/api/cultivos', gestionarCultivoRouter);
@@ -48,22 +49,19 @@ app.use('/api/perfil', perfilRouter);
 app.use('/api/persona', personaRouter);
 app.use('/api/programacionIluminacion', programacionIluminacionRouter);
 app.use('/api/programacionRiego', programacionRiegoRouter);
-app.use('/api/historial', historialRouter); 
-
-console.log('DEBUG: Ruta /api/historial configurada con historialRouter.');
-
+app.use('/api/historial', historialRouter);
+console.log('DEBUG: Rutas específicas configuradas.');
 
 app.use('/api/auth', authRouter);
 console.log('DEBUG: Ruta /api/auth configurada con authRouter.');
 
-
-app.use('/api/users', userRouter); 
+app.use('/api/users', userRouter);
 console.log('DEBUG: Ruta /api/users configurada con userRouter.');
 
-
+// Manejador de errores global
 const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
     console.error('DEBUG: Error global capturado:', err.stack);
-    
+
     res.status(500).json({
         error: 'Algo salió mal en el servidor.',
         details: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error',

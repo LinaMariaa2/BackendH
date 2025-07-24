@@ -12,7 +12,7 @@ import server from './server';
 
 import { sequelize } from './config/db'; 
 
-const port = process.env.PORT || 4000; 
+const port = process.env.PORT || 3000; // Use the port from .env or 3000 by default
 
 async function startServer() {
     try {

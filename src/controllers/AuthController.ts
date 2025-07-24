@@ -6,13 +6,17 @@ import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import { Op } from 'sequelize';
 import { transporter } from '../config/nodemailerConfig';
 
-export class AuthController {
-    static {
-        console.log("###################################################");
-        console.log("### AuthController.ts: Módulo cargado en memoria ###");
-        console.log("###################################################");
+declare module 'express-serve-static-core' {
+    interface Request {
+        user?: {
+            id_persona: number;
+            rol: 'admin' | 'operario';
+            isVerified: boolean;
+        };
     }
+}
 
+export class AuthController {
     private static readonly JWT_SECRET: Secret = (() => {
         const secret = process.env.JWT_SECRET;
         if (!secret) {
@@ -39,23 +43,30 @@ export class AuthController {
                     <p>Atentamente,<br>El Equipo de Soporte Horti-Tech.</p>`,
             };
             await transporter.sendMail(mailOptions);
-            console.log(`[AUTH] Código de verificación enviado a ${user.correo}`);
         } catch (mailError: any) {
-            console.error('[AUTH] Error al enviar correo de verificación:', mailError);
+            console.error('Error al enviar correo de verificación:', mailError);
         }
     }
 
-    static register = async (req: Request, res: Response): Promise<Response<any, Record<string, any>> | void> => {
+    static register = async (req: Request, res: Response): Promise<void> => {
         try {
             const { nombre_usuario, correo, contrasena } = req.body;
             const rol = 'operario';
 
+            const allowedRoles = ['operario', 'admin'];
+            if (!allowedRoles.includes(rol)) {
+                res.status(400).json({ error: 'Rol no válido proporcionado. Solo "operario" o "admin" son permitidos.' });
+                return; // Asegura la salida de la función
+            }
+
             const existingUser = await Persona.findOne({ where: { correo } });
             if (existingUser) {
-                return res.status(409).json({ error: 'El correo electrónico ya está registrado.' });
+                res.status(409).json({ error: 'El correo electrónico ya está registrado.' });
+                return; // Asegura la salida de la función
             }
 
             const hashedPassword = await bcrypt.hash(contrasena, 10);
+
             const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
             const verificationCodeExpires = new Date(Date.now() + 10 * 60 * 1000);
 
@@ -63,7 +74,7 @@ export class AuthController {
                 nombre_usuario,
                 correo,
                 contrasena: hashedPassword,
-                rol,
+                rol: 'operario',
                 estado: 'activo',
                 isVerified: false,
                 verificationCode,
@@ -94,27 +105,30 @@ export class AuthController {
             });
 
         } catch (error: any) {
-            console.error('[AUTH] Error al registrar usuario:', error);
+            console.error('Error al registrar usuario:', error);
             res.status(500).json({ error: 'Error interno del servidor al registrar usuario.', details: error.message });
         }
     };
 
-    static login = async (req: Request, res: Response): Promise<Response<any, Record<string, any>> | void> => {
+    static login = async (req: Request, res: Response): Promise<void> => {
         try {
             const { correo, contrasena } = req.body;
 
             const user = await Persona.findOne({ where: { correo } });
             if (!user) {
-                return res.status(401).json({ error: 'Credenciales inválidas.' });
+                res.status(401).json({ error: 'Credenciales inválidas.' });
+                return; // Asegura la salida de la función
             }
 
             const MAX_LOGIN_ATTEMPTS = parseInt(process.env.MAX_LOGIN_ATTEMPTS || '5', 10);
 
             if (user.estado === 'bloqueado') {
-                return res.status(403).json({ error: 'Tu cuenta está bloqueada debido a múltiples intentos fallidos. Inténtalo de nuevo más tarde o contacta al administrador.' });
+                res.status(403).json({ error: 'Tu cuenta está bloqueada debido a múltiples intentos fallidos. Inténtalo de nuevo más tarde o contacta al administrador.' });
+                return; // Asegura la salida de la función
             }
             if (user.estado === 'inactivo') {
-                return res.status(403).json({ error: 'Tu cuenta está inactiva. Contacta al administrador.' });
+                res.status(403).json({ error: 'Tu cuenta está inactiva. Contacta al administrador.' });
+                return; // Asegura la salida de la función
             }
 
             if (!user.isVerified) {
@@ -123,9 +137,11 @@ export class AuthController {
                     user.verificationCodeExpires = new Date(Date.now() + 10 * 60 * 1000);
                     await user.save();
                     await AuthController.sendVerificationCode(user);
-                    return res.status(401).json({ error: 'Correo electrónico no verificado o código expirado. Se ha enviado un nuevo código para que verifiques tu cuenta.' });
+                    res.status(401).json({ error: 'Correo electrónico no verificado o código expirado. Se ha enviado un nuevo código para que verifiques tu cuenta.' });
+                    return; // Asegura la salida de la función
                 }
-                return res.status(401).json({ error: 'Correo electrónico no verificado. Por favor, verifica tu bandeja de entrada con el código existente.' });
+                res.status(401).json({ error: 'Correo electrónico no verificado. Por favor, verifica tu bandeja de entrada con el código existente.' });
+                return; // Asegura la salida de la función
             }
 
             const isMatch = await bcrypt.compare(contrasena, user.contrasena);
@@ -134,23 +150,23 @@ export class AuthController {
                 if (user.intentos >= MAX_LOGIN_ATTEMPTS) {
                     user.estado = 'bloqueado';
                     await user.save();
-                    return res.status(401).json({ error: `Credenciales inválidas. Demasiados intentos fallidos (${user.intentos}/${MAX_LOGIN_ATTEMPTS}). Tu cuenta ha sido bloqueada. Contacta al administrador si persiste.` });
+                    res.status(401).json({ error: `Credenciales inválidas. Demasiados intentos fallidos (${user.intentos}/${MAX_LOGIN_ATTEMPTS}). Tu cuenta ha sido bloqueada. Contacta al administrador si persiste.` });
+                    return; // Asegura la salida de la función
                 }
                 await user.save();
-                return res.status(401).json({ error: `Credenciales inválidas. Intentos restantes: ${MAX_LOGIN_ATTEMPTS - user.intentos}.` });
+                res.status(401).json({ error: `Credenciales inválidas. Intentos restantes: ${MAX_LOGIN_ATTEMPTS - user.intentos}.` });
+                return; // Asegura la salida de la función
             }
 
             user.intentos = 0;
             user.estado = 'activo';
             await user.save();
 
-            // --- CORRECCIÓN AQUÍ: Cambiado 'id' a 'id_persona' para que coincida con authMiddleware ---
             const payload = {
-                id_persona: user.id_persona, // ¡CORREGIDO!
+                id_persona: user.id_persona,
                 rol: user.rol,
                 isVerified: user.isVerified
             };
-            // --- FIN DE CORRECCIÓN ---
 
             const options: SignOptions = {
                 expiresIn: AuthController.JWT_EXPIRES_IN
@@ -168,7 +184,7 @@ export class AuthController {
                 message: 'Login exitoso',
                 token,
                 user: {
-                    id_persona: user.id_persona, // También es buena práctica unificar este nombre en la respuesta
+                    id_persona: user.id_persona,
                     nombre_usuario: user.nombre_usuario,
                     correo: user.correo,
                     rol: user.rol,
@@ -178,20 +194,20 @@ export class AuthController {
                 }
             });
 
-
         } catch (error: any) {
             console.error('[AUTH] Error al iniciar sesión:', error);
             res.status(500).json({ error: 'Error interno del servidor al iniciar sesión.', details: error.message });
         }
     };
 
-    static createPersonaByAdmin = async (req: Request, res: Response): Promise<Response<any, Record<string, any>> | void> => {
+    static createPersonaByAdmin = async (req: Request, res: Response): Promise<void> => {
         try {
             const { nombre_usuario, correo, contrasena, rol } = req.body;
 
             const existingUser = await Persona.findOne({ where: { correo } });
             if (existingUser) {
-                return res.status(409).json({ error: 'El correo electrónico ya está registrado.' });
+                res.status(409).json({ error: 'El correo electrónico ya está registrado.' });
+                return; // Asegura la salida de la función
             }
 
             const hashedPassword = await bcrypt.hash(contrasena, 10);
@@ -233,16 +249,11 @@ export class AuthController {
         }
     };
 
-    static verifyEmailCode = async (req: Request, res: Response): Promise<Response<any, Record<string, any>> | void> => {
+    static verifyEmailCode = async (req: Request, res: Response): Promise<void> => {
         try {
             const { correo, verificationCode } = req.body;
 
-            console.log("Intento de verificación para correo:", correo);
-            console.log("Código recibido del frontend (raw):", verificationCode);
-
             const trimmedVerificationCode = verificationCode ? String(verificationCode).trim() : '';
-            console.log("Código recibido del frontend (trimmed):", trimmedVerificationCode);
-            console.log("Fecha actual del servidor:", new Date().toISOString());
 
             const user = await Persona.findOne({
                 where: {
@@ -254,25 +265,8 @@ export class AuthController {
             });
 
             if (!user) {
-                const potentialUser = await Persona.findOne({ where: { correo } });
-
-                if (potentialUser) {
-                    console.log("\n--- Detalles del usuario encontrado en DB (sin todas las condiciones): ---");
-                    console.log("ID Persona:", potentialUser.id_persona);
-                    console.log("Correo DB:", potentialUser.correo);
-                    console.log("Código DB:", potentialUser.verificationCode);
-                    console.log("Expiración DB:", potentialUser.verificationCodeExpires ? potentialUser.verificationCodeExpires.toISOString() : 'N/A');
-                    console.log("isVerified DB:", potentialUser.isVerified);
-                    console.log("¿Código recibido ('" + trimmedVerificationCode + "') coincide con DB ('" + potentialUser.verificationCode + "')?", trimmedVerificationCode === potentialUser.verificationCode);
-                    console.log("¿Código expirado?", potentialUser.verificationCodeExpires && potentialUser.verificationCodeExpires < new Date());
-                    console.log("¿Ya verificado?", potentialUser.isVerified);
-                    console.log("-----------------------------------------");
-                } else {
-                    console.log("\n--- No se encontró ningún usuario con ese correo en la base de datos (Error 400). ---");
-                    console.log("-----------------------------------------");
-                }
-
-                return res.status(400).json({ error: 'Código de verificación inválido, expirado, o correo ya verificado.' });
+                res.status(400).json({ error: 'Código de verificación inválido, expirado, o correo ya verificado.' });
+                return; // Asegura la salida de la función
             }
 
             user.isVerified = true;
@@ -281,7 +275,6 @@ export class AuthController {
             await user.save();
 
             let perfil = await Perfil.findOne({ where: { personaId: user.id_persona } });
-
             if (perfil) {
                 perfil.isVerified = true;
                 await perfil.save();
@@ -297,28 +290,28 @@ export class AuthController {
                 });
             }
 
-
-            console.log("\n--- Usuario verificado exitosamente. ---");
             res.status(200).json({ message: 'Correo electrónico verificado exitosamente. Ya puedes iniciar sesión.' });
 
         } catch (error: any) {
-            console.error('[AUTH] Error al verificar código:', error);
+            console.error('Error al verificar código:', error);
             res.status(500).json({ error: 'Error interno del servidor al verificar código.', details: error.message });
         }
     };
 
-    static async resendVerificationCode(req: Request, res: Response): Promise<Response<any, Record<string, any>> | void> {
+    static async resendVerificationCode(req: Request, res: Response): Promise<void> {
         try {
             const { correo } = req.body;
 
             const user = await Persona.findOne({ where: { correo } });
 
             if (!user) {
-                return res.status(404).json({ error: 'Usuario no encontrado.' });
+                res.status(404).json({ error: 'Usuario no encontrado.' });
+                return; // Asegura la salida de la función
             }
 
             if (user.isVerified) {
-                return res.status(400).json({ error: 'El correo electrónico ya está verificado.' });
+                res.status(400).json({ error: 'El correo electrónico ya está verificado.' });
+                return; // Asegura la salida de la función
             }
 
             const newVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
