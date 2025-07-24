@@ -12,11 +12,11 @@ export class ProgramacionRiego extends Model {
   declare id_pg_riego: number;
 
   @AllowNull(false)
-  @Column({ type: DataType.DATE }) // Timestamp completo
+  @Column({ type: DataType.DATE }) 
   declare fecha_inicio: Date;
 
   @AllowNull(false)
-  @Column({ type: DataType.DATE }) // Timestamp completo
+  @Column({ type: DataType.DATE }) 
   declare fecha_finalizacion: Date;
 
   @AllowNull(true)

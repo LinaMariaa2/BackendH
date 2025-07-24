@@ -7,8 +7,6 @@ import { Op } from 'sequelize';
 
 
 export class bitacoraController {
-  // Obtener todas las publicaciones
-  // bitacoraController.ts
 static getAll = async (req: Request, res: Response) => {
   try {
     const { archivadas } = req.query;

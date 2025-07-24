@@ -1,9 +1,7 @@
-// src/middlewares/userValidation.ts
 import { body, param, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
 
-// Middleware genérico para manejar los errores de validación de express-validator
-// Debe ser EXPORTADA
+
 export const handleInputErrors = (req: Request, res: Response, next: NextFunction) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -12,14 +10,12 @@ export const handleInputErrors = (req: Request, res: Response, next: NextFunctio
     next();
 };
 
-//  Validación para el ID de Persona
 export const validatePersonaId = [
     param('id_persona')
         .isInt({ gt: 0 }).withMessage('El ID de persona debe ser un número entero positivo')
         .toInt(),
 ];
 
-//  Validación para el REGISTRO de un nuevo usuario (pública)
 export const validateRegistration = [
     body('nombre_usuario')
         .trim()
@@ -41,16 +37,15 @@ export const validateRegistration = [
     handleInputErrors
 ];
 
-//  Validación para la CREACIÓN de una Persona por ADMINISTRADOR
 export const validateAdminPersonaCreation = [
-    ...validateRegistration.slice(0, -1), // Reutiliza nombre_usuario, correo, contrasena del registro
+    ...validateRegistration.slice(0, -1),
     body('rol')
         .notEmpty().withMessage('El rol es obligatorio')
         .isIn(['admin', 'aprendiz']).withMessage('El rol no es válido. Debe ser "admin" o "aprendiz"'),
     handleInputErrors
 ];
 
-//  Validación para la ACTUALIZACIÓN de una Persona (ADMIN)
+
 export const validateAdminPersonaUpdate = [
     body('nombre_usuario')
         .optional()

@@ -1,9 +1,8 @@
-// src/models/Perfil.ts (Tu código actual, verificado)
 import { Table, Column, DataType, PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt, AllowNull, ForeignKey, BelongsTo, Default } from 'sequelize-typescript';
 import { Model } from 'sequelize-typescript';
 import Persona from './Persona';
 
-@Table({ tableName: 'tbl_perfil', timestamps: true }) // Asegúrate de que 'tbl_perfil' es el nombre correcto de tu tabla
+@Table({ tableName: 'tbl_perfil', timestamps: true }) 
 export class Perfil extends Model {
   @PrimaryKey
   @AutoIncrement

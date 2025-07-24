@@ -1,120 +1,72 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { UserController } from '../controllers/UserController';
-import { authMiddleware, authorizeRoles } from '../middlewares/authMiddleware';
-import {
-    validatePersonaId,
-    validateAdminPersonaCreation, // Importado para la creación de usuarios por admin
-    validateAdminPersonaUpdate,
-    handleInputErrors
-} from '../middlewares/userValidation';
-import multer from 'multer';
-
-// Importa RequestHandler de Express para un tipado más explícito
-import { RequestHandler } from 'express';
+import { authenticateJWT } from '../middlewares/authMiddleware';
+import upload from '../config/multerConfig'; // Importa la instancia de Multer
 
 const router = Router();
 
-// Middleware para envolver funciones asíncronas y manejar errores
-const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) =>
-    (req: Request, res: Response, next: NextFunction) => {
-        Promise.resolve(fn(req, res, next)).catch(next);
-    };
-
-// Configuración de Multer para manejar la subida de archivos
-const upload = multer({
-    storage: multer.memoryStorage(),
-    limits: { fileSize: 5 * 1024 * 1024 } // Límite de 5MB
+// Nuevo método para obtener el perfil del usuario autenticado (usado por /perfil)
+router.get('/perfil', authenticateJWT, (req: Request, res: Response, next: NextFunction) => {
+    UserController.getAuthenticatedUserProfile(req, res).catch(next);
 });
 
-// Rutas de Gestión de Usuarios
+// Nuevo método para actualizar el perfil del usuario autenticado (usado por /perfil/update)
+router.put('/perfil/update', authenticateJWT, (req: Request, res: Response, next: NextFunction) => {
+    UserController.updateAuthenticatedUserProfile(req, res).catch(next);
+});
 
-// GET /api/users - Obtener todos los usuarios (Solo Admin)
-router.get(
-    '/',
-    authMiddleware as RequestHandler,
-    authorizeRoles(['admin']) as RequestHandler,
-    asyncHandler(UserController.getAll)
-);
-
-// GET /api/users/activos - Obtener usuarios activos (Solo Admin)
-router.get(
-    '/activos',
-    authMiddleware as RequestHandler,
-    authorizeRoles(['admin']) as RequestHandler,
-    asyncHandler(UserController.getAllActivos)
-);
-
-// GET /api/users/:id_persona - Obtener un usuario por ID (Admin o el propio usuario)
-router.get(
-    '/:id_persona',
-    authMiddleware as RequestHandler,
-    authorizeRoles(['admin', 'operario']) as RequestHandler, // Permitir que operarios vean su propio perfil
-    [validatePersonaId, handleInputErrors] as RequestHandler[],
-    asyncHandler(UserController.getById)
-);
-
-// POST /api/users - Crear un nuevo usuario (Solo Admin)
-// Esta ruta es para que el administrador registre nuevas personas directamente
+// Ruta para subir la foto de perfil
+// Usa Multer como middleware antes del controlador de la subida
 router.post(
-    '/',
-    authMiddleware as RequestHandler,
-    authorizeRoles(['admin']) as RequestHandler,
-    [validateAdminPersonaCreation, handleInputErrors] as RequestHandler[], // Aplicar validaciones de creación para admin
-    asyncHandler(UserController.crearPersona)
+    '/:id_persona/upload-photo', // <-- ¡CAMBIO AQUÍ! La ruta ahora es solo '/:id_persona/upload-photo'
+    authenticateJWT,
+    upload.single('profile_picture'), // 'profile_picture' es el nombre del campo del formulario para el archivo
+    (req: Request, res: Response, next: NextFunction) => {
+        // Pasa el control a UserController.uploadProfilePhoto
+        UserController.uploadProfilePhoto(req, res).catch(next);
+    }
 );
 
-// PUT /api/users/:id_persona - Actualizar un usuario (Solo Admin)
-router.put(
-    '/:id_persona',
-    authMiddleware as RequestHandler,
-    authorizeRoles(['admin']) as RequestHandler,
-    [validatePersonaId, validateAdminPersonaUpdate, handleInputErrors] as RequestHandler[],
-    asyncHandler(UserController.actualizarPersona)
-);
+// Obtener todas las Personas (Solo Admin)
+router.get('/', authenticateJWT, (req: Request, res: Response, next: NextFunction) => {
+    // Aquí puedes añadir una verificación de rol si no la tienes en un middleware anterior
+    if (req.user?.rol !== 'admin') {
+         res.status(403).json({ message: 'Acceso denegado. Solo administradores pueden ver todas las personas.' });
+    }
+    UserController.getAll(req, res).catch(next);
+});
 
-// PUT /api/users/inactivar/:id_persona - Cambiar estado a inactivo (Solo Admin)
-router.put(
-    '/inactivar/:id_persona',
-    authMiddleware as RequestHandler,
-    authorizeRoles(['admin']) as RequestHandler,
-    [validatePersonaId, handleInputErrors] as RequestHandler[],
-    asyncHandler(UserController.inactivarPersona)
-);
+// Obtener Personas Activas y Verificadas (Solo Admin)
+router.get('/activos', authenticateJWT, (req: Request, res: Response, next: NextFunction) => {
+    if (req.user?.rol !== 'admin') {
+        res.status(403).json({ message: 'Acceso denegado. Solo administradores pueden ver perfiles activos.' });
+    }
+    UserController.getAllActivos(req, res).catch(next);
+});
 
-// PUT /api/users/activar/:id_persona - Cambiar estado a activo (Solo Admin)
-router.put(
-    '/activar/:id_persona',
-    authMiddleware as RequestHandler,
-    authorizeRoles(['admin']) as RequestHandler,
-    [validatePersonaId, handleInputErrors] as RequestHandler[],
-    asyncHandler(UserController.activarPersona)
-);
+// Mostrar Persona por ID (Solo Admin o el propio usuario si es su ID)
+router.get('/:id_persona', authenticateJWT, (req: Request, res: Response, next: NextFunction) => {
+    // Puedes añadir una lógica para permitir que un usuario vea su propio perfil
+    // if (req.user?.rol !== 'admin' && req.user?.id_persona !== parseInt(req.params.id_persona)) {
+    //     return res.status(403).json({ message: 'Acceso denegado.' });
+    // }
+    UserController.getById(req, res).catch(next);
+});
 
-// PUT /api/users/bloquear/:id_persona - Cambiar estado a bloqueado/mantenimiento (Solo Admin)
-router.put(
-    '/bloquear/:id_persona',
-    authMiddleware as RequestHandler,
-    authorizeRoles(['admin']) as RequestHandler,
-    [validatePersonaId, handleInputErrors] as RequestHandler[],
-    asyncHandler(UserController.bloquearPersona)
-);
+// Actualizar Persona (Solo Admin)
+router.put('/:id_persona', authenticateJWT, (req: Request, res: Response, next: NextFunction) => {
+    if (req.user?.rol !== 'admin') {
+     res.status(403).json({ message: 'Acceso denegado. Solo administradores pueden actualizar personas.' });
+    }
+    UserController.update(req, res).catch(next);
+});
 
-// DELETE /api/users/:id_persona - Eliminar un usuario (Solo Admin)
-router.delete(
-    '/:id_persona',
-    authMiddleware as RequestHandler,
-    authorizeRoles(['admin']) as RequestHandler,
-    [validatePersonaId, handleInputErrors] as RequestHandler[],
-    asyncHandler(UserController.eliminarPersona)
-);
-
-// POST /api/users/:id_persona/upload-photo - Subir foto de perfil (Admin o el propio Operario)
-router.post(
-    '/:id_persona/upload-photo',
-    authMiddleware as RequestHandler,
-    authorizeRoles(['admin', 'operario']) as RequestHandler, // Permitir que el propio operario suba su foto
-    upload.single('profile_picture'), // 'profile_picture' debe coincidir con el nombre del campo en el FormData del frontend
-    asyncHandler(UserController.uploadProfilePhoto)
-);
+// Eliminar Persona (Solo Admin)
+router.delete('/:id_persona', authenticateJWT, (req: Request, res: Response, next: NextFunction) => {
+    if (req.user?.rol !== 'admin') {
+       res.status(403).json({ message: 'Acceso denegado. Solo administradores pueden eliminar personas.' });
+    }
+    UserController.delete(req, res).catch(next);
+});
 
 export default router;

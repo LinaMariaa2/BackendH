@@ -13,11 +13,11 @@ export const uploadCultivoImage = async (req: Request, res: Response) => {
 
     const nombreArchivo = `cultivos/${Date.now()}_${file.originalname}`; 
 
-   // const nombreArchivo = `${Date.now()}_${file.originalname}`;
+   
 
 
     const { data, error } = await supabase.storage
-      .from('cultivos') // Cambia por tu bucket real
+      .from('cultivos') 
       .upload(nombreArchivo, file.buffer, {
         contentType: file.mimetype,
         upsert: true,

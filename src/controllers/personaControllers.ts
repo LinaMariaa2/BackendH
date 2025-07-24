@@ -1,11 +1,11 @@
 import type { Request, Response } from 'express';
 import Persona from '../models/Persona'; 
-import { Op } from 'sequelize'; // Asegúrate de tener esto al inicio del archivo
-//import { PasswordHelper } from '../helpers/passwordHelper'; 
+import { Op } from 'sequelize';
+
 
 export class PersonaController {
 
-  // Obtenemos todas las Personas
+
   static getAll = async (req: Request, res: Response) => {
     try {
       const filtro = req.query.filtro?.toString().toLowerCase() || "";
@@ -15,7 +15,7 @@ export class PersonaController {
           estado: "activo",
           rol: "operario", 
           nombre_usuario: {
-            [Op.iLike]: `%${filtro}%`, // PostgreSQL case-insensitive LIKE
+            [Op.iLike]: `%${filtro}%`, 
           },
         },
       });
@@ -100,23 +100,15 @@ if (!idRaw || isNaN(id) || !Number.isInteger(id)) {
   // Crear una nueva Persona
   static crearPersona = async (req: Request, res: Response): Promise<void> => {
     try {
-      // Nota: Las validaciones de formato de email, longitud de contraseña, etc.
-      // deberían hacerse preferiblemente en un middleware antes de este controlador.
+    
       
       const { contrasena, ...restOfBody } = req.body;
-
-      // Aquí deberías hashear la contraseña antes de guardarla.
-      // Si usas un helper como `PasswordHelper`:
-      // const hashedPassword = await PasswordHelper.hashPassword(contrasena);
-      // const personaData = { ...restOfBody, contrasena: hashedPassword };
-
-      // Por ahora, solo usamos la contraseña directamente (NO RECOMENDADO EN PRODUCCIÓN SIN HASH)
       const personaData = { ...restOfBody, contrasena: contrasena };
 
       const persona = new Persona(personaData);
       await persona.save();
       
-      // Puedes enviar la persona creada, excluyendo la contraseña si lo deseas
+     
       const personaSinContrasena = persona.toJSON();
       delete personaSinContrasena.contrasena;
 
@@ -124,12 +116,12 @@ if (!idRaw || isNaN(id) || !Number.isInteger(id)) {
 
     } catch (error: any) {
       console.error('Error al crear la persona:', error);
-      // Manejo específico para errores de restricción única (ej. correo duplicado)
+  
       if (error.name === 'SequelizeUniqueConstraintError') {
         res.status(409).json({ error: 'El correo electrónico ya está registrado. Por favor, usa otro.', details: error.message });
         return;
       }
-      // Manejo para errores de validación (ej. allowNull: false, ENUM)
+     
       if (error.name === 'SequelizeValidationError') {
         res.status(400).json({ error: 'Datos de persona inválidos', details: error.errors.map((e: any) => e.message) });
         return;
@@ -145,12 +137,7 @@ if (!idRaw || isNaN(id) || !Number.isInteger(id)) {
   static actualizarPersona = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const { contrasena, ...updateData } = req.body; // Evita que la contraseña se actualice directamente sin hashear
-
-      // Si se envía una nueva contraseña, debería hashearse
-      // if (contrasena) {
-      //   updateData.contrasena = await PasswordHelper.hashPassword(contrasena);
-      // }
+      const { contrasena, ...updateData } = req.body; 
 
       const [rowsUpdated] = await Persona.update(updateData, {
         where: { id_persona: id },
@@ -200,7 +187,7 @@ if (!idRaw || isNaN(id) || !Number.isInteger(id)) {
       }
 
       persona.estado = 'inactivo';
-      await persona.save(); // Sequelize guarda solo los campos modificados por defecto
+      await persona.save(); 
 
       res.json({ mensaje: 'Persona inactivada correctamente' });
     } catch (error: any) {
@@ -270,12 +257,6 @@ if (!idRaw || isNaN(id) || !Number.isInteger(id)) {
         res.status(404).json({ error: 'Persona no encontrada' });
         return;
       }
-
-      // Opcional: Podrías añadir una validación aquí para solo eliminar personas "inactivas"
-      // if (persona.estado !== 'inactivo') {
-      //   res.status(400).json({ error: 'Solo se puede eliminar una persona inactiva' });
-      //   return;
-      // }
 
       await persona.destroy();
       res.json({ mensaje: 'Persona eliminada permanentemente' });

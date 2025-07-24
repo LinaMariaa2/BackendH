@@ -11,11 +11,11 @@ export class ProgramacionIluminacion extends Model {
   declare id_iluminacion: number;
 
   @AllowNull(true)
-  @Column({ type: DataType.DATE })  // timestamp con fecha y hora completa
+  @Column({ type: DataType.DATE }) 
   declare fecha_inicio: Date;
 
   @AllowNull(true)
-  @Column({ type: DataType.DATE })  // timestamp con fecha y hora completa
+  @Column({ type: DataType.DATE }) 
   declare fecha_finalizacion: Date;
 
   @AllowNull(true)
