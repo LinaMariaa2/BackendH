@@ -4,8 +4,8 @@ import { Model } from 'sequelize-typescript';
 import zona from './zona';
 
 @Table ({
-    tableName: 'tbl_historial_riego', timestamps: true,})
-    export default class riego extends Model {
+tableName: 'tbl_historial_riego', timestamps: true,})
+export default class riego extends Model {
 @PrimaryKey
 @AutoIncrement
 @Column({type: DataType.INTEGER, allowNull: false})
@@ -36,4 +36,4 @@ fecha_creacion!: Date;
 fecha_actualizacion!: Date;
 
 
-    }
+}
