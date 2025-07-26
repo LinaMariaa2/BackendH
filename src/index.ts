@@ -2,17 +2,19 @@
 import dotenv from 'dotenv';
 dotenv.config(); 
 
+/*
 console.log('Variables de entorno cargadas:');
 console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'Cargado' : 'NO CARGADO');
 console.log('EMAIL_USER:', process.env.EMAIL_USER);
 console.log('EMAIL_PASS:', process.env.EMAIL_PASS ? 'Cargado' : 'NO CARGADO');
 console.log('DB_HOST:', process.env.DB_HOST);
+*/
 
 import server from './server';
 
 import { sequelize } from './config/db'; 
 
-const port = process.env.PORT || 3000; // Use the port from .env or 3000 by default
+const port = process.env.PORT || 4000; 
 
 async function startServer() {
     try {
@@ -30,6 +32,5 @@ async function startServer() {
         process.exit(1);
     }
 }
-
 
 startServer();

@@ -1,7 +1,6 @@
 // src/config/db.ts
 import { Sequelize } from 'sequelize-typescript';
 import * as path from 'path';
-
 // --- Validaciones de Variables de Entorno al inicio ---
 // Es crucial que estas variables existan antes de intentar usar Sequelize.
 // Si no existen, salimos del proceso para evitar errores posteriores.
