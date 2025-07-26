@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { PrograRiegoController } from '../controllers/PrograRiegoController';
+import { PrograRiegoController } from '../controllers/prograRiegoController';
 import { validarProgramacionRiego } from '../middlewares/validarProgramacionRiego';
 import { handleInputErrors } from '../middlewares/validation';
 
