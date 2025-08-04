@@ -16,20 +16,19 @@ router.put('/perfil/update', authenticateJWT, (req: Request, res: Response, next
 });
 
 // Ruta para subir la foto de perfil
-// Usa Multer como middleware antes del controlador de la subida
 router.post(
-    '/:id_persona/upload-photo', // <-- ¡CAMBIO AQUÍ! La ruta ahora es solo '/:id_persona/upload-photo'
+    '/:id_persona/upload-photo', 
     authenticateJWT,
-    upload.single('profile_picture'), // 'profile_picture' es el nombre del campo del formulario para el archivo
+    upload.single('profile_picture'), 
     (req: Request, res: Response, next: NextFunction) => {
-        // Pasa el control a UserController.uploadProfilePhoto
+ 
         UserController.uploadProfilePhoto(req, res).catch(next);
     }
 );
 
 // Obtener todas las Personas (Solo Admin)
 router.get('/', authenticateJWT, (req: Request, res: Response, next: NextFunction) => {
-    // Aquí puedes añadir una verificación de rol si no la tienes en un middleware anterior
+   
     if (req.user?.rol !== 'admin') {
          res.status(403).json({ message: 'Acceso denegado. Solo administradores pueden ver todas las personas.' });
     }
@@ -44,12 +43,8 @@ router.get('/activos', authenticateJWT, (req: Request, res: Response, next: Next
     UserController.getAllActivos(req, res).catch(next);
 });
 
-// Mostrar Persona por ID (Solo Admin o el propio usuario si es su ID)
 router.get('/:id_persona', authenticateJWT, (req: Request, res: Response, next: NextFunction) => {
-    // Puedes añadir una lógica para permitir que un usuario vea su propio perfil
-    // if (req.user?.rol !== 'admin' && req.user?.id_persona !== parseInt(req.params.id_persona)) {
-    //     return res.status(403).json({ message: 'Acceso denegado.' });
-    // }
+ 
     UserController.getById(req, res).catch(next);
 });
 

@@ -12,40 +12,51 @@ const router = Router();
 
 type ExpressMiddleware = (req: Request, res: Response, next: NextFunction) => void;
 
-// Ruta de LOGIN
+// Rutas de registro y login existentes
 router.post(
     '/login',
     ...validateLogin as ExpressMiddleware[],
     (req: Request, res: Response, next: NextFunction) => {
-        AuthController.login(req, res).catch(next); // Llama al controlador y pasa cualquier error a 'next'
+        AuthController.login(req, res).catch(next);
     }
 );
 
-// Ruta de REGISTRO
 router.post(
     '/register',
     ...validateRegistration as ExpressMiddleware[],
     (req: Request, res: Response, next: NextFunction) => {
-        AuthController.register(req, res).catch(next); // Llama al controlador y pasa cualquier error a 'next'
+        AuthController.register(req, res).catch(next);
     }
 );
 
-// Ruta para VERIFICAR CÓDIGO
 router.post(
     '/verify-email',
     ...validateVerifyCode as ExpressMiddleware[],
     (req: Request, res: Response, next: NextFunction) => {
-        AuthController.verifyEmailCode(req, res).catch(next); // Llama al controlador y pasa cualquier error a 'next'
+        AuthController.verifyEmailCode(req, res).catch(next);
     }
 );
 
-// Ruta para REENVIAR CÓDIGO
 router.post(
     '/resend-verification-code',
     ...validateResendCode as ExpressMiddleware[],
     (req: Request, res: Response, next: NextFunction) => {
-        AuthController.resendVerificationCode(req, res).catch(next); // Llama al controlador y pasa cualquier error a 'next'
+        AuthController.resendVerificationCode(req, res).catch(next);
     }
 );
+
+// NUEVAS RUTAS para la recuperación de contraseña
+// Puedes crear nuevos middlewares de validación para estas rutas si lo deseas.
+router.post('/send-reset-code', (req: Request, res: Response, next: NextFunction) => {
+    AuthController.sendPasswordResetCode(req, res).catch(next);
+});
+
+router.post('/verify-reset-code', (req: Request, res: Response, next: NextFunction) => {
+    AuthController.verifyPasswordResetCode(req, res).catch(next);
+});
+
+router.post('/reset-password', (req: Request, res: Response, next: NextFunction) => {
+    AuthController.resetPassword(req, res).catch(next);
+});
 
 export default router;

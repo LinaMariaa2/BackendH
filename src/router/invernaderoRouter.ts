@@ -2,19 +2,19 @@ import { Router } from 'express';
 import { invernaderoController } from '../controllers/invernaderoController';
 import {validateInvernaderoId, validateInvernaderoNombreUnico, validateInvernaderoBody, validateInvernaderoUpdate} from '../middlewares/invernaderoValidator';
 import { handleInputErrors } from '../middlewares/validation';
-import { zonaController } from '../controllers/zonaController';
+import { zonaController } from '../controllers/zonaController'; // Importación necesaria para la ruta de zonas
 
 const router = Router();
-
 
 router.get('/', invernaderoController.getAll);
 router.get('/activos', invernaderoController.getAllActivos);
 
 router.get(
-  '/:id/zonas', 
-  validateInvernaderoId, 
-  handleInputErrors, 
-  zonaController.getZonasPorInvernadero);
+  '/:id/zonas',
+  validateInvernaderoId,
+  handleInputErrors,
+  zonaController.getZonasPorInvernadero
+);
 
 router.get(
   '/:id',
@@ -35,7 +35,7 @@ router.put(
   '/:id',
   validateInvernaderoId,
   validateInvernaderoUpdate,
-  handleInputErrors, 
+  handleInputErrors,
   invernaderoController.actualizarInvernadero
 );
 
@@ -59,6 +59,7 @@ router.patch(
   handleInputErrors,
   invernaderoController.mantenimientoInvernadero
 );
+
 router.patch(
   '/:id/estado',
   validateInvernaderoId,

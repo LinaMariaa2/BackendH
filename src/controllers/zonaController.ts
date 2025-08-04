@@ -1,3 +1,5 @@
+// src/controllers/zonaController.ts
+
 import type { Request, Response } from 'express';
 import Zona from '../models/zona';
 import { actualizarConteoZonas } from '../helpers/actualizarConteoZona';
@@ -37,111 +39,111 @@ export class zonaController {
   };
 
   static crearZona = async (req: Request, res: Response) => {
-  try {
-    const { nombre, descripciones_add, estado, id_cultivo, id_invernadero } = req.body;
+    try {
+      const { nombre, descripciones_add, estado, id_cultivo, id_invernadero } = req.body;
 
-    // Validar que el invernadero exista y esté activo
-    const invernadero = await Invernadero.findByPk(id_invernadero);
-    if (!invernadero) {
-       res.status(404).json({ error: 'Invernadero no encontrado' });
-       return;  
-    }
+      // Validar que el invernadero exista y esté activo
+      const invernadero = await Invernadero.findByPk(id_invernadero);
+      if (!invernadero) {
+        res.status(404).json({ error: 'Invernadero no encontrado' });
+        return;
+      }
 
-    if (invernadero.estado !== 'activo') {
-    res.status(400).json({
-        error: `No se puede crear la zona porque el invernadero está en estado: "${invernadero.estado}".`,
-      });
-      return;
-    }
+      if (invernadero.estado !== 'activo') {
+        res.status(400).json({
+          error: `No se puede crear la zona porque el invernadero está en estado: "${invernadero.estado}".`,
+        });
+        return;
+      }
 
-    const zona = await Zona.create({
-      nombre,
-      descripciones_add,
-      estado,
-      id_cultivo: id_cultivo || null,
-      id_invernadero,
-    });
-
-    await actualizarConteoZonas(zona.id_invernadero);
-
-    res.status(201).json({ mensaje: 'Zona creada correctamente', zona });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al crear la zona', details: error });
-  }
-};
-
-
-
-  static actualizarZona = async (req: Request, res: Response) => {
-  try {
-    const { id_zona } = req.params;
-    const { nombre, descripciones_add, estado, id_cultivo, id_invernadero } = req.body;
-
-    const [updated] = await Zona.update(
-      {
+      const zona = await Zona.create({
         nombre,
         descripciones_add,
         estado,
         id_cultivo: id_cultivo || null,
         id_invernadero,
-      },
-      {
-        where: { id_zona },
-      }
-    );
+      });
 
-    if (updated === 0) {
+      await actualizarConteoZonas(zona.id_invernadero);
+
+      res.status(201).json({ mensaje: 'Zona creada correctamente', zona });
+    } catch (error) {
+      res.status(500).json({ error: 'Error al crear la zona', details: error });
+    }
+  };
+
+
+
+  static actualizarZona = async (req: Request, res: Response) => {
+    try {
+      const { id_zona } = req.params;
+      const { nombre, descripciones_add, estado, id_cultivo, id_invernadero } = req.body;
+
+      const [updated] = await Zona.update(
+        {
+          nombre,
+          descripciones_add,
+          estado,
+          id_cultivo: id_cultivo || null,
+          id_invernadero,
+        },
+        {
+          where: { id_zona },
+        }
+      );
+
+      if (updated === 0) {
+        res.status(404).json({ error: 'Zona no encontrada' });
+        return;
+      }
+
+      const zonaActualizada = await Zona.findByPk(id_zona);
+      if (zonaActualizada) {
+        await actualizarConteoZonas(zonaActualizada.id_invernadero);
+      }
+
+      res.json({ mensaje: 'Zona actualizada correctamente' });
+    } catch (error) {
+      res.status(500).json({ error: 'Error al actualizar la zona', details: error });
+    }
+  };
+
+
+  static cambiarEstadoGenerico = async (req: Request, res: Response) => {
+    const { id_zona } = req.params;
+    const { estado } = req.body;
+
+    const estadosPermitidos = ['activo', 'inactivo', 'mantenimiento'];
+    if (!estadosPermitidos.includes(estado)) {
+      res.status(400).json({ error: 'Estado no válido' });
+      return;
+    }
+
+    const zona = await Zona.findByPk(id_zona);
+    if (!zona) {
       res.status(404).json({ error: 'Zona no encontrada' });
       return;
     }
 
-    const zonaActualizada = await Zona.findByPk(id_zona);
-    if (zonaActualizada) {
-      await actualizarConteoZonas(zonaActualizada.id_invernadero);
+    // 🔒 Verifica el estado del invernadero al que pertenece
+    const invernadero = await Invernadero.findByPk(zona.id_invernadero);
+    if (!invernadero) {
+      res.status(404).json({ error: 'Invernadero no encontrado' });
+      return;
     }
 
-    res.json({ mensaje: 'Zona actualizada correctamente' });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al actualizar la zona', details: error });
-  }
-};
+    if (invernadero.estado !== 'activo') {
+      res.status(400).json({
+        error: `No se puede cambiar el estado de una zona porque su invernadero está en estado: "${invernadero.estado}".`,
+      });
+    }
 
+    zona.estado = estado;
+    await zona.save({ fields: ['estado'] });
 
-  static cambiarEstadoGenerico = async (req: Request, res: Response) => {
-  const { id_zona } = req.params;
-  const { estado } = req.body;
-
-  const estadosPermitidos = ['activo', 'inactivo', 'mantenimiento'];
-  if (!estadosPermitidos.includes(estado)) {
-    res.status(400).json({ error: 'Estado no válido' });
+    res.json({ mensaje: 'Estado de la zona actualizado correctamente', zona });
     return;
-  }
-
-  const zona = await Zona.findByPk(id_zona);
-  if (!zona) {
-     res.status(404).json({ error: 'Zona no encontrada' });
-     return;
-  }
-
-  // 🔒 Verifica el estado del invernadero al que pertenece
-  const invernadero = await Invernadero.findByPk(zona.id_invernadero);
-  if (!invernadero) {
-    res.status(404).json({ error: 'Invernadero no encontrado' });
-    return;
-  }
-
-  if (invernadero.estado !== 'activo') {
-     res.status(400).json({
-      error: `No se puede cambiar el estado de una zona porque su invernadero está en estado: "${invernadero.estado}".`,
-    });
-  }
-
-  zona.estado = estado;
-  await zona.save({ fields: ['estado'] });
-
-   res.json({ mensaje: 'Estado de la zona actualizado correctamente', zona });
-   return;
-};
+  };
 
 
   static inactivarZona = async (req: Request, res: Response) => {
@@ -151,7 +153,7 @@ export class zonaController {
 
       if (!zona) {
         res.status(404).json({ error: 'Zona no encontrada' });
-         return ;
+        return;
       }
 
       zona.set('estado', 'inactivo');
@@ -207,8 +209,8 @@ export class zonaController {
       const zona = await Zona.findByPk(id_zona);
 
       if (!zona) {
-         res.status(404).json({ error: 'Zona no encontrada' });
-          return ;
+        res.status(404).json({ error: 'Zona no encontrada' });
+        return;
       }
 
       zona.set('estado', 'mantenimiento');
@@ -227,8 +229,8 @@ export class zonaController {
       const zona = await Zona.findByPk(id_zona);
 
       if (!zona) {
-         res.status(404).json({ error: 'Zona no encontrada' });
-          return ;
+        res.status(404).json({ error: 'Zona no encontrada' });
+        return;
       }
 
       const id_invernadero = zona.id_invernadero;

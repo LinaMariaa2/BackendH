@@ -11,7 +11,7 @@ import { handleInputErrors } from '../middlewares/validation';
 const router = Router();
 
 router.get('/', zonaController.getAll);
-router.get('/todos', zonaController.getAllActivos);
+router.get('/activos', zonaController.getAllActivos); // Corregido: ruta consistente
 router.get('/invernadero/:id', zonaController.getZonasPorInvernadero);
 
 router.post(

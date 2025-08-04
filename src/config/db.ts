@@ -1,9 +1,7 @@
 // src/config/db.ts
 import { Sequelize } from 'sequelize-typescript';
 import * as path from 'path';
-// --- Validaciones de Variables de Entorno al inicio ---
-// Es crucial que estas variables existan antes de intentar usar Sequelize.
-// Si no existen, salimos del proceso para evitar errores posteriores.
+
 if (!process.env.DB_HOST) {
     console.error('❌ ERROR CRÍTICO: La variable de entorno DB_HOST no está definida.');
     process.exit(1); // Sale de la aplicación
