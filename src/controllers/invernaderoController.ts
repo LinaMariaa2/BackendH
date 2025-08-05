@@ -1,16 +1,30 @@
-// src/controllers/invernaderoController.ts
 import type { Request, Response } from 'express';
 import Invernadero from '../models/invernadero';
 import Zona from '../models/zona';
 import { actualizarConteoZonas } from '../helpers/actualizarConteoZona';
 import { Persona } from '../models/Persona';
-import { Op } from 'sequelize';
 
 export class invernaderoController {
+  static getDatosActivos = async (req: Request, res: Response) => {
+    try {
+      const invernaderos = await Invernadero.findAll({
+        where: { estado: 'activo' },
+        attributes: ['id_invernadero', 'nombre'],
+        order: [['id_invernadero', 'ASC']],
+      });
+      res.json(invernaderos);
+    } catch (error: any) {
+      console.error('❌ Error al obtener los invernaderos activos:', error);
+      res.status(500).json({
+        error: 'Error al obtener invernaderos activos',
+        details: error.message,
+      });
+    }
+  };
 
+  // ... (otros métodos existentes) ...
   static getAll = async (req: Request, res: Response) => {
     try {
-      // ✅ Realiza una única consulta y actualiza los conteos en el mismo bucle
       const invernaderos = await Invernadero.findAll({
         include: [{
           model: Persona,
@@ -24,8 +38,6 @@ export class invernaderoController {
         await actualizarConteoZonas(inv.id_invernadero);
       }
 
-      // Vuelve a buscar los datos para que el frontend obtenga los conteos actualizados.
-      // Esta es la forma más segura de garantizar la consistencia de los datos.
       const invernaderosActualizados = await Invernadero.findAll({
         include: [{
           model: Persona,
@@ -47,7 +59,6 @@ export class invernaderoController {
 
   static getAllActivos = async (req: Request, res: Response) => {
     try {
-      // ✅ Realiza una única consulta eficiente para obtener los invernaderos activos
       const invernaderos = await Invernadero.findAll({
         where: { estado: 'activo' },
         include: [{
@@ -58,12 +69,10 @@ export class invernaderoController {
         order: [['id_invernadero', 'ASC']],
       });
 
-      // Actualiza el conteo de zonas por cada invernadero activo
       for (const inv of invernaderos) {
         await actualizarConteoZonas(inv.id_invernadero);
       }
       
-      // Vuelve a buscar para reflejar los conteos actualizados
       const invernaderosActualizados = await Invernadero.findAll({
         where: { estado: 'activo' },
         include: [{
@@ -83,7 +92,6 @@ export class invernaderoController {
       });
     }
   };
-
   static getId = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;

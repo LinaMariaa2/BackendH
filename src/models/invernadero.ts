@@ -1,3 +1,4 @@
+//invernadero
 import { Table,Column,Model,HasMany,DataType,PrimaryKey,AutoIncrement,CreatedAt,UpdatedAt,ForeignKey,BelongsTo,} from 'sequelize-typescript';
 import { Persona } from './Persona';
 import { Zona } from './zona';

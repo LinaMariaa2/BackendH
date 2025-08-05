@@ -5,6 +5,7 @@ import cors from 'cors';
 import { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 
+
 dotenv.config();
 
 console.log('DEBUG: Iniciando configuración de Express...');
@@ -14,9 +15,11 @@ const app = express();
 console.log('DEBUG: Middleware express.json() aplicado.');
 app.use(express.json());
 
-console.log('DEBUG: Middleware CORS aplicado con origen:', process.env.FRONTEND_URL || 'http://localhost:3000');
+
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+console.log('DEBUG: Middleware CORS aplicado con origen:', frontendUrl);
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: frontendUrl,
   credentials: true
 }));
 
@@ -37,7 +40,7 @@ import imagenRouter from './router/imagenRouter';
 import authRouter from './router/authRouter';
 import perfilRouter from './router/perfilRouter';
 import personaRouter from './router/personaRouter';
-
+import iluminacionRouter from './router/iluminacionRouter'
 console.log('DEBUG: Definiendo rutas...');
 
 // Montaje de Routers
@@ -55,7 +58,7 @@ app.use('/api/historialRiego', historialRiegoRouter);
 app.use('/api/imagen', imagenRouter);
 app.use('/api/perfil', perfilRouter);
 app.use('/api/persona', personaRouter);
-console.log('DEBUG: Rutas específicas configuradas.');
+app.use('/api/iluminacion', iluminacionRouter); 
 
 app.use('/api/users', userRouter);
 console.log('DEBUG: Ruta /api/users configurada con userRouter.');
@@ -71,7 +74,4 @@ const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFun
 app.use(globalErrorHandler);
 console.log('DEBUG: Manejador de errores global configurado.');
 
-// ----------------------------------------------------------------------
-// ✅ Se exporta 'app' como default para que el archivo 'index.ts' pueda importarlo
-// ----------------------------------------------------------------------
 export default app;

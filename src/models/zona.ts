@@ -10,10 +10,9 @@ import {
   ForeignKey,
   BelongsTo,
   AllowNull,
-  HasMany
 } from 'sequelize-typescript';
 import { Invernadero } from './invernadero';
-import { GestionCultivo } from './gestionarCultivos';
+import { GestionCultivo } from './gestionarCultivos'; // Asegúrate de que este import sea correcto
 
 @Table({ tableName: 'tbl_zona', timestamps: true, underscored: true })
 export class Zona extends Model {
@@ -30,9 +29,18 @@ export class Zona extends Model {
   @Column(DataType.TEXT)
   declare descripciones_add: string;
 
+  // 👉 Columna para el estado general de la zona (activo, inactivo, mantenimiento)
   @AllowNull(false)
   @Column(DataType.ENUM('activo', 'inactivo', 'mantenimiento'))
-  declare estado: string;
+  declare estado: 'activo' | 'inactivo' | 'mantenimiento';
+
+  // 👉 Nueva columna para el estado de la iluminación (activo, inactivo)
+  @AllowNull(false)
+  @Column({
+    type: DataType.ENUM('activo', 'inactivo'),
+    defaultValue: 'inactivo', // Valor por defecto
+  })
+  declare estado_iluminacion: 'activo' | 'inactivo';
 
   // Relación con invernadero
   @ForeignKey(() => Invernadero)
@@ -44,12 +52,12 @@ export class Zona extends Model {
   declare invernadero: Invernadero;
 
   @ForeignKey(() => GestionCultivo)
-@AllowNull(true)
-@Column(DataType.INTEGER)
-declare id_cultivo: number | null;
+  @AllowNull(true)
+  @Column(DataType.INTEGER)
+  declare id_cultivo: number | null;
 
-@BelongsTo(() => GestionCultivo)
-declare cultivo: GestionCultivo;
+  @BelongsTo(() => GestionCultivo)
+  declare cultivo: GestionCultivo;
 
   @CreatedAt
   @Column({ field: 'created_at', type: DataType.DATE })
