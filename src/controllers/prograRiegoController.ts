@@ -5,13 +5,18 @@ import Zona from '../models/zona';
 
 export class PrograRiegoController {
   static getTodasLasProgramaciones = async (_req: Request, res: Response): Promise<void> => {
-    try {
-      const datos = await ProgramacionRiego.findAll();
-      res.json(datos);
-    } catch (error) {
-      res.status(500).json({ error: 'Error al obtener las programaciones', detalle: error });
-    }
-  };
+  try {
+    const ahora = new Date();
+    const datos = await ProgramacionRiego.findAll({
+      where: {
+        fecha_finalizacion: { [Op.gt]: ahora } // Solo mostrar las que aún no han finalizado
+      }
+    });
+    res.json(datos);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener las programaciones', detalle: error });
+  }
+};
 
   static getProgramacionPorId = async (req: Request, res: Response): Promise<void> => {
     const id = parseInt(req.params.id, 10);
@@ -34,6 +39,7 @@ export class PrograRiegoController {
 
   static crearProgramacion = async (req: Request, res: Response): Promise<void> => {
     try {
+      console.log('Body recibido:', req.body);
       const nueva = await ProgramacionRiego.create(req.body);
       res.status(201).json(nueva);
     } catch (error) {
@@ -80,6 +86,36 @@ export class PrograRiegoController {
       res.status(500).json({ error: 'Error al eliminar la programación', detalle: error });
     }
   };
+
+
+
+  static async cambiarEstadoProgramacion(req: Request, res: Response) {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+      res.status(400).json({ mensaje: 'ID inválido' });
+      return;
+    }
+
+    const { activo } = req.body;
+    if (typeof activo !== 'boolean') {
+      res.status(400).json({ mensaje: 'El valor de "activo" debe ser booleano (true o false)' });
+      return;
+    }
+
+    try {
+      const programacion = await ProgramacionRiego.findOne({ where: { id_pg_riego: id } });
+      if (!programacion) {
+        res.status(404).json({ mensaje: 'Programación no encontrada' });
+        return;
+      }
+
+      await programacion.update({ estado: activo });
+      res.json({ mensaje: `Programación ${activo ? 'reanudada' : 'detenida'} correctamente`, estado: activo });
+    } catch (error) {
+      res.status(500).json({ error: 'Error al cambiar el estado de la programación', detalle: error });
+    }
+  };
+
 
   static getZonasRiegoActivasParaESP32 = async (_req: Request, res: Response): Promise<void> => {
     try {

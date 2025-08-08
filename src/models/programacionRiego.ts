@@ -42,6 +42,10 @@ export class ProgramacionRiego extends Model {
   @UpdatedAt
   @Column({ field: 'updated_at' })
   declare updatedAt: Date;
-}
+
+  @AllowNull(false)
+  @Column({ type: DataType.BOOLEAN, defaultValue: true })
+  declare estado: boolean;
+  }
 
 export default ProgramacionRiego;

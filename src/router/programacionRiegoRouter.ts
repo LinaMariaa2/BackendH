@@ -6,6 +6,15 @@ import { handleInputErrors } from '../middlewares/validation';
 const router = Router();
 
 router.get('/zonas/activas', PrograRiegoController.getZonasRiegoActivasParaESP32);
+
+router.patch('/:id/estado', async (req, res, next) => {
+  try {
+    await PrograRiegoController.cambiarEstadoProgramacion(req, res);
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/', PrograRiegoController.getTodasLasProgramaciones);
 router.get('/:id', PrograRiegoController.getProgramacionPorId);
 router.post('/', validarProgramacionRiego, handleInputErrors, PrograRiegoController.crearProgramacion);

@@ -10,6 +10,6 @@ export const validarProgramacion = [
     .isISO8601().withMessage('Formato de fecha inválido (debe incluir fecha y hora ISO)'),
 
   body('id_zona')
-    .notEmpty().withMessage('El ID de zona es obligatorio')
+    .optional() //  esto hace que no sea obligatorio
     .isInt().withMessage('El ID de zona debe ser un número entero'),
 ];

@@ -49,14 +49,14 @@ export class PrograIluminController {
     }
 
     try {
-      const programacion = await ProgramacionIluminacion.findByPk(id);
+      const programacion = await ProgramacionIluminacion.findOne({where:{id_iluminacion: id}});
       if (!programacion) {
         res.status(404).json({ mensaje: 'Programación no encontrada' });
         return;
       }
 
       await programacion.update(req.body);
-      res.json({ mensaje: 'Programación actualizada correctamente', programacion });
+      res.json(programacion);
     } catch (error) {
       res.status(500).json({ error: 'Error al actualizar la programación', detalle: error });
     }
@@ -81,27 +81,83 @@ export class PrograIluminController {
     }
   };
 
+  //  Cambiar estado (detener/reanudar)
+  static cambiarEstadoProgramacion = async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    return res.status(400).json({ mensaje: 'ID inválido' });
+  }
+
+  try {
+    const programacion = await ProgramacionIluminacion.findOne({ where: { id_iluminacion: id } });
+
+    if (!programacion) {
+      return res.status(404).json({ mensaje: 'Programación no encontrada' });
+    }
+
+    // Alternar el estado actual
+    programacion.estado = !programacion.estado;
+    await programacion.save();
+
+    return res.json({
+      mensaje: `Programación ${programacion.estado ? 'reanuda' : 'detenida'} correctamente`,
+      estado: programacion.estado,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      mensaje: 'Error al cambiar el estado de la programación',
+      error,
+    });
+  }
+};
+
+
+
+
+static async getProgramacionesFuturasPorZona(req: Request, res: Response) {
+  try {
+    const zonaId = parseInt(req.params.id);
+
+    const programaciones = await ProgramacionIluminacion.findAll({
+      where: {
+        id_zona: zonaId,
+        fecha_finalizacion: {
+          [Op.gt]: new Date(),  // solo programaciones que no hayan finalizado
+        },
+        //estado: true,           // solo activas (opcional)
+      },
+      order: [['fecha_inicio', 'ASC']],
+    });
+
+    res.json(programaciones);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener programaciones futuras' });
+  }
+}  
+
+
   static getZonasActivasParaESP32 = async (_req: Request, res: Response) => {
     try {
       const ahora = new Date();
 
-      // Consultar programaciones activas con JOIN a la tabla Zona
       const programaciones = await ProgramacionIluminacion.findAll({
         where: {
           fecha_inicio: { [Op.lte]: ahora },
-          fecha_finalizacion: { [Op.gte]: ahora }
+          fecha_finalizacion: { [Op.gte]: ahora },
+          estado: true // solo las activas
         },
         include: [
           {
             model: Zona,
-            where: { estado: 'activo' }, // Solo zonas activas
+            where: { estado: 'activo' },
             attributes: ['id_zona', 'estado']
           }
         ]
       });
 
-      //console.log('🕒 Fecha y hora actual:', ahora.toISOString());
-      //console.log('📦 Programaciones activas con zona activa:', programaciones.length);
+      console.log('🕒 Fecha y hora actual:', ahora.toISOString());
+      console.log('📦 Programaciones activas con zona activa:', programaciones.length);
       programaciones.forEach(p => {
         console.log(`🧾 Zona: ${p.id_zona} | Inicio: ${p.fecha_inicio?.toISOString()} | Fin: ${p.fecha_finalizacion?.toISOString()}`);
       });
