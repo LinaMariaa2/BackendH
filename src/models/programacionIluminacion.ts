@@ -37,6 +37,12 @@ export class ProgramacionIluminacion extends Model {
   @UpdatedAt
   @Column({ field: 'updated_at' })
   declare updatedAt: Date;
+
+
+  @AllowNull(false)
+  @Column({ type: DataType.BOOLEAN, defaultValue: true }) // true = activa, false = inactiva
+  declare estado: boolean;
+
 }
 
 export default ProgramacionIluminacion;
