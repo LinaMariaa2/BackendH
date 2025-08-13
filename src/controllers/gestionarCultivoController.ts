@@ -32,12 +32,10 @@ export class gestionCultivoController {
 
   static cambiarEstado = async (req: Request, res: Response) => {
   const { id, estado } = req.params;
-
   if (!['activo', 'finalizado'].includes(estado)) {
     res.status(400).json({ error: 'Estado no válido' });
     return ;
   }
-
   try {
     const cultivo = await GestionCultivo.findByPk(id);
     if (!cultivo) {
@@ -122,6 +120,61 @@ static actualizarCultivo = async (req: Request, res: Response) => {
     return;
   }
 };
+
+static actualizarProduccion = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    let { cantidad_reservada, cantidad_cosechada, unidad_medida } = req.body;
+
+    cantidad_cosechada = cantidad_cosechada !== undefined ? Number(cantidad_cosechada) : null;
+    cantidad_reservada = cantidad_reservada !== undefined ? Number(cantidad_reservada) : null;
+
+    if (
+      (cantidad_cosechada !== null && (isNaN(cantidad_cosechada) || cantidad_cosechada < 0)) ||
+      (cantidad_reservada !== null && (isNaN(cantidad_reservada) || cantidad_reservada < 0))
+    ) {
+      res.status(400).json({ error: 'Debe enviar cantidades válidas para actualizar.' });
+      return;
+    }
+
+    const cultivo = await GestionCultivo.findByPk(id);
+    if (!cultivo) {
+     res.status(404).json({ error: 'Cultivo no encontrado' });
+      return;
+    }
+
+    if (cantidad_cosechada !== null) {
+      const diferencia = cantidad_cosechada - cultivo.cantidad_cosechada;
+      cultivo.cantidad_disponible += diferencia;
+      cultivo.cantidad_cosechada = cantidad_cosechada;
+    }
+
+    if (cantidad_reservada !== null) {
+      if (cantidad_reservada > cultivo.cantidad_cosechada) {
+        res.status(400).json({ error: 'La cantidad reservada no puede superar la cosechada' });
+         return;
+      }
+      const diferencia = cantidad_reservada - cultivo.cantidad_reservada;
+      cultivo.cantidad_disponible -= diferencia;
+      cultivo.cantidad_reservada = cantidad_reservada;
+    }
+
+    if (unidad_medida) {
+      cultivo.unidad_medida = unidad_medida;
+    }
+
+    await cultivo.save();
+    res.json({ mensaje: 'Producción actualizada correctamente', cultivo });
+     return;
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al actualizar producción', details: error });
+     return;
+  }
+};
+
+
 
   
 }

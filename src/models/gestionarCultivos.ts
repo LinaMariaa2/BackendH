@@ -27,6 +27,8 @@ export class GestionCultivo extends Model {
   @Column(DataType.TEXT)
   declare descripcion: string;
 
+
+
   @Column(DataType.FLOAT)
   declare temp_min: number;
 
@@ -39,6 +41,8 @@ export class GestionCultivo extends Model {
   @Column(DataType.FLOAT)
   declare humedad_max: number;
 
+
+
   @Column(DataType.DATE)
   declare fecha_inicio: Date;
 
@@ -50,6 +54,22 @@ export class GestionCultivo extends Model {
 
   @Column(DataType.TEXT)
   declare imagenes: string;
+
+  //produccion y disponibilidad
+
+  @Column(DataType.ENUM('kilogramos', 'unidades'))
+  declare unidad_medida: 'kilogramos' | 'unidades';
+
+  @Column(DataType.INTEGER)
+  declare cantidad_cosechada: number;
+
+  @Column(DataType.INTEGER)
+  declare cantidad_disponible: number;
+
+  @Column(DataType.INTEGER)
+  declare cantidad_reservada:number;
+
+  //si hay tiempo se integran proyecciones y estimaciones
 
   // ✅ Relación con Zona (requerida por el modelo Zona para @HasMany)
   @ForeignKey(() => Zona)

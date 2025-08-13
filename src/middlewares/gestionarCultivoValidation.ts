@@ -2,6 +2,7 @@
 import { body, param } from 'express-validator';
 import GestionCultivo from '../models/gestionarCultivos';
 import Zona from '../models/zona';
+
 export const validateCultivoId = [
   param('id')
     .isInt({ gt: 0 }).withMessage('ID inválido')
