@@ -116,6 +116,25 @@ export class PrograRiegoController {
     }
   };
 
+  static async getProgramacionesFuturasPorZonaR(req: Request, res: Response) {
+    try {
+      const zonaId = parseInt(req.params.id);
+      const programaciones = await ProgramacionRiego.findAll({
+        where: {
+          id_zona: zonaId,
+          fecha_finalizacion: {
+            [Op.gt]: new Date(),  // solo programaciones que no hayan finalizado
+          },
+          //estado: true,           // solo activas (opcional)
+        },
+        order: [['fecha_inicio', 'ASC']],
+      });
+  
+      res.json(programaciones);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Error al obtener programaciones futuras' });
+    }}
 
   static getZonasRiegoActivasParaESP32 = async (_req: Request, res: Response): Promise<void> => {
     try {

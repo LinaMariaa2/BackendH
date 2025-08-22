@@ -66,7 +66,9 @@ const sequelize = new Sequelize({
         acquire: 30000, // Tiempo máximo, en milisegundos, para que una conexión se adquiera antes de lanzar un error
         idle: 10000, // Tiempo máximo, en milisegundos, que una conexión puede estar inactiva en el pool antes de ser liberada
     },
+    
 });
+
 
 // --- Función para conectar y sincronizar modelos ---
 async function connectDB() {
@@ -86,5 +88,5 @@ async function connectDB() {
         throw error;
     }
 }
-
+export default sequelize;
 export { sequelize, connectDB };

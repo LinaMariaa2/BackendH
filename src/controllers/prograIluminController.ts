@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { Op } from 'sequelize';
 import ProgramacionIluminacion from '../models/programacionIluminacion';
 import Zona from '../models/zona';
+import zonedTimeToUtc from 'assert';
 
 export class PrograIluminController {
   static getTodasLasProgramaciones = async (_req: Request, res: Response) => {

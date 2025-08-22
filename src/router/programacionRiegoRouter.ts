@@ -14,6 +14,13 @@ router.patch('/:id/estado', async (req, res, next) => {
     next(err);
   }
 });
+router.get('/zona/:id/futuras', async (req, res, next) => {
+  try {
+    await PrograRiegoController.getProgramacionesFuturasPorZonaR(req, res);
+  } catch (error) {
+    next(error);
+  }
+});
 
 router.get('/', PrograRiegoController.getTodasLasProgramaciones);
 router.get('/:id', PrograRiegoController.getProgramacionPorId);

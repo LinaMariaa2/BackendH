@@ -41,6 +41,7 @@ import authRouter from './router/authRouter';
 import perfilRouter from './router/perfilRouter';
 import personaRouter from './router/personaRouter';
 import iluminacionRouter from './router/iluminacionRouter'
+
 console.log('DEBUG: Definiendo rutas...');
 
 // Montaje de Routers
