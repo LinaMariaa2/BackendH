@@ -2,21 +2,22 @@ import { Request, Response } from 'express';
 import { Op } from 'sequelize';
 import ProgramacionRiego from '../models/programacionRiego';
 import Zona from '../models/zona';
+import HistorialRiego from '../models/historialRiego'; // <-- Importar modelo de historial
 
 export class PrograRiegoController {
   static getTodasLasProgramaciones = async (_req: Request, res: Response): Promise<void> => {
-  try {
-    const ahora = new Date();
-    const datos = await ProgramacionRiego.findAll({
-      where: {
-        fecha_finalizacion: { [Op.gt]: ahora } // Solo mostrar las que aún no han finalizado
-      }
-    });
-    res.json(datos);
-  } catch (error) {
-    res.status(500).json({ error: 'Error al obtener las programaciones', detalle: error });
-  }
-};
+    try {
+      const ahora = new Date();
+      const datos = await ProgramacionRiego.findAll({
+        where: {
+          fecha_finalizacion: { [Op.gt]: ahora } // Solo mostrar las que aún no han finalizado
+        }
+      });
+      res.json(datos);
+    } catch (error) {
+      res.status(500).json({ error: 'Error al obtener las programaciones', detalle: error });
+    }
+  };
 
   static getProgramacionPorId = async (req: Request, res: Response): Promise<void> => {
     const id = parseInt(req.params.id, 10);
@@ -87,8 +88,10 @@ export class PrograRiegoController {
     }
   };
 
-
-
+  /**
+   * Cambiar estado de la programación
+   * Aquí agregamos la creación automática de historial si se activa el riego
+   */
   static async cambiarEstadoProgramacion(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
@@ -110,12 +113,27 @@ export class PrograRiegoController {
       }
 
       await programacion.update({ estado: activo });
+
+      // 🔹 Si se activa la programación, crear historial
+      if (activo) {
+        const fechaActivacion = new Date();
+
+        const duracionMs = new Date(programacion.fecha_finalizacion).getTime() - new Date(programacion.fecha_inicio).getTime();
+        const duracion_minutos = Math.round(duracionMs / 60000);
+
+        await HistorialRiego.create({
+          id_pg_riego: programacion.id_pg_riego,
+          id_zona: programacion.id_zona,
+          fecha_activacion: fechaActivacion,
+          duracion_minutos,
+        });
+      }
+
       res.json({ mensaje: `Programación ${activo ? 'reanudada' : 'detenida'} correctamente`, estado: activo });
     } catch (error) {
       res.status(500).json({ error: 'Error al cambiar el estado de la programación', detalle: error });
     }
-  };
-
+  }
 
   static getZonasRiegoActivasParaESP32 = async (_req: Request, res: Response): Promise<void> => {
     try {

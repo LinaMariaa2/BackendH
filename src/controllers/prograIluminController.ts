@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { Op } from 'sequelize';
 import ProgramacionIluminacion from '../models/programacionIluminacion';
 import Zona from '../models/zona';
+import HistorialIluminacion from '../models/historialIluminacion'
 
 export class PrograIluminController {
   static getTodasLasProgramaciones = async (_req: Request, res: Response) => {
@@ -96,8 +97,26 @@ export class PrograIluminController {
     }
 
     // Alternar el estado actual
-    programacion.estado = !programacion.estado;
-    await programacion.save();
+    const nuevoEstado = !programacion.estado;
+    await programacion.update({ estado: nuevoEstado});
+
+    if (nuevoEstado){
+      const fechaActivacion = new Date();
+      const duracionMs =
+          new Date(programacion.fecha_finalizacion).getTime() -
+          new Date(programacion.fecha_inicio).getTime();
+        const duracion_minutos = Math.round(duracionMs / 60000);
+
+        await HistorialIluminacion.create({
+          id_zona: programacion.id_zona,
+          id_iluminacion: programacion.id_iluminacion, // 👈 enlazamos con la programación
+          fecha_activacion: fechaActivacion,
+          duracion_minutos,
+        });
+
+      
+      
+    }
 
     return res.json({
       mensaje: `Programación ${programacion.estado ? 'reanuda' : 'detenida'} correctamente`,
