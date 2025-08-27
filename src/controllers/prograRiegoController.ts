@@ -39,14 +39,30 @@ export class PrograRiegoController {
   };
 
   static crearProgramacion = async (req: Request, res: Response): Promise<void> => {
-    try {
-      console.log('Body recibido:', req.body);
-      const nueva = await ProgramacionRiego.create(req.body);
-      res.status(201).json(nueva);
-    } catch (error) {
-      res.status(500).json({ error: 'Error al crear la programación', detalle: error });
-    }
-  };
+  try {
+    console.log('Body recibido:', req.body);
+    const nueva = await ProgramacionRiego.create(req.body);
+
+    // 🔹 Registrar automáticamente en historial
+    const fechaActivacion = new Date(nueva.fecha_inicio);
+    const duracionMs =
+      new Date(nueva.fecha_finalizacion).getTime() -
+      new Date(nueva.fecha_inicio).getTime();
+    const duracion_minutos = Math.round(duracionMs / 60000);
+
+    await HistorialRiego.create({
+      id_pg_riego: nueva.id_pg_riego,
+      id_zona: nueva.id_zona,
+      fecha_activacion: fechaActivacion,
+      duracion_minutos,
+    });
+
+    res.status(201).json(nueva);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al crear la programación', detalle: error });
+  }
+};
+
 
   static actualizarProgramacion = async (req: Request, res: Response): Promise<void> => {
     const id = parseInt(req.params.id, 10);

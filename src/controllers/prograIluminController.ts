@@ -33,14 +33,30 @@ export class PrograIluminController {
     }
   };
 
-  static crearProgramacion = async (req: Request, res: Response) => {
-    try {
-      const nueva = await ProgramacionIluminacion.create(req.body);
-      res.status(201).json(nueva);
-    } catch (error) {
-      res.status(500).json({ error: 'Error al crear la programación', detalle: error });
-    }
-  };
+ static crearProgramacion = async (req: Request, res: Response) => {
+  try {
+    const nueva = await ProgramacionIluminacion.create(req.body);
+
+    // 🔹 Registrar automáticamente en historial
+    const fechaActivacion = new Date(nueva.fecha_inicio);
+    const duracionMs =
+      new Date(nueva.fecha_finalizacion).getTime() -
+      new Date(nueva.fecha_inicio).getTime();
+    const duracion_minutos = Math.round(duracionMs / 60000);
+
+    await HistorialIluminacion.create({
+      id_zona: nueva.id_zona,
+      id_iluminacion: nueva.id_iluminacion,
+      fecha_activacion: fechaActivacion,
+      duracion_minutos,
+    });
+
+    res.status(201).json(nueva);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al crear la programación', detalle: error });
+  }
+};
+
 
   static actualizarProgramacion = async (req: Request, res: Response) => {
     const id = parseInt(req.params.id, 10);
