@@ -149,7 +149,6 @@ export class PrograRiegoController {
     } catch (error) {
       res.status(500).json({ error: 'Error al cambiar el estado de la programación', detalle: error });
     }
-<<<<<<< HEAD
   };
 
   static async getProgramacionesFuturasPorZonaR(req: Request, res: Response) {
@@ -171,9 +170,7 @@ export class PrograRiegoController {
       console.error(error);
       res.status(500).json({ error: 'Error al obtener programaciones futuras' });
     }}
-=======
-  }
->>>>>>> Jerson
+  
 
   static getZonasRiegoActivasParaESP32 = async (_req: Request, res: Response): Promise<void> => {
     try {

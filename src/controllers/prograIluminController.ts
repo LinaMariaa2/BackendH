@@ -2,11 +2,8 @@ import { Request, Response } from 'express';
 import { Op } from 'sequelize';
 import ProgramacionIluminacion from '../models/programacionIluminacion';
 import Zona from '../models/zona';
-<<<<<<< HEAD
 import zonedTimeToUtc from 'assert';
-=======
 import HistorialIluminacion from '../models/historialIluminacion'
->>>>>>> Jerson
 
 export class PrograIluminController {
   static getTodasLasProgramaciones = async (_req: Request, res: Response) => {
