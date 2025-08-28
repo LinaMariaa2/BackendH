@@ -5,6 +5,9 @@ import cors from 'cors';
 import { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 
+import { createServer } from 'http';
+import { Server as SocketIOServer } from 'socket.io';
+
 
 dotenv.config();
 
@@ -41,6 +44,7 @@ import authRouter from './router/authRouter';
 import perfilRouter from './router/perfilRouter';
 import personaRouter from './router/personaRouter';
 import iluminacionRouter from './router/iluminacionRouter'
+import lecturaSensorRouter from './router/lecturaSensorRouter'
 
 console.log('DEBUG: Definiendo rutas...');
 
@@ -60,6 +64,8 @@ app.use('/api/imagen', imagenRouter);
 app.use('/api/perfil', perfilRouter);
 app.use('/api/persona', personaRouter);
 app.use('/api/iluminacion', iluminacionRouter); 
+app.use('/api/lecturas', lecturaSensorRouter);
+
 
 app.use('/api/users', userRouter);
 console.log('DEBUG: Ruta /api/users configurada con userRouter.');
@@ -75,4 +81,21 @@ const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFun
 app.use(globalErrorHandler);
 console.log('DEBUG: Manejador de errores global configurado.');
 
-export default app;
+// Crear servidor HTTP y Socket.IO
+const server = createServer(app);
+
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: frontendUrl,
+    methods: ['GET', 'POST']
+  }
+});
+
+io.on('connection', (socket) => {
+  console.log('Cliente conectado:', socket.id);
+  socket.on('disconnect', () => {
+    console.log('Cliente desconectado:', socket.id);
+  });
+});
+
+export { app, server, io }; // <-- Exportamos los tres

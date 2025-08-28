@@ -1,12 +1,23 @@
-// src/router/historialRouter.ts
+// src/router/historialIluminacionRouter.ts
 import { Router } from 'express';
-// Importa las funciones controladoras directamente por su nombre
-import { getAllIluminacion } from '../controllers/historialIluminacionController'; 
-
+import { getAllIluminacion, crearHistorialIluminacion } from '../controllers/historialIluminacionController';
 
 const router = Router();
 
+router.get('/', async (req, res, next) => {
+  try {
+    await getAllIluminacion(req, res);
+  } catch (err) {
+    next(err);
+  }
+});
 
-router.get('/iluminacion', getAllIluminacion); 
+router.post('/', async (req, res, next) => {
+  try {
+    await crearHistorialIluminacion(req, res);
+  } catch (err) {
+    next(err);
+  }
+});
 
 export default router;
