@@ -8,16 +8,11 @@ import { Server as SocketIOServer } from 'socket.io';
 
 
 dotenv.config();
-
-console.log('DEBUG: Iniciando configuración de Express...');
-
 const app = express();
-
-console.log('DEBUG: Middleware express.json() aplicado.');
 app.use(express.json());
 
 const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-console.log('DEBUG: Middleware CORS aplicado con origen:', frontendUrl);
+
 app.use(cors({
   origin: frontendUrl,
   credentials: true,
@@ -49,10 +44,8 @@ import lecturaSensorRouter from './router/lecturaSensorRouter'
 // -----------------------------
 // Definición de Rutas
 // -----------------------------
-console.log('DEBUG: Definiendo rutas...');
 
 app.use('/api/auth', authRouter);
-console.log('DEBUG: Ruta /api/auth configurada con authRouter.');
 
 app.use('/api/invernadero', invernaderoRouter);
 app.use('/api/zona', zonaRouter);
@@ -61,7 +54,6 @@ app.use('/api/bitacora', bitacoraRouter);
 
 // 🚨 Nueva ruta para programación de iluminación
 app.use('/api/programacionIluminacion', programacionIluminacionRouter);
-console.log('DEBUG: Ruta /api/programacionIluminacion configurada con programacionIluminacionRouter.');
 
 app.use('/api/programacionRiego', programacionRiegoRouter);
 app.use('/api/historialIluminacion', historialIluminacionRouter);
@@ -73,7 +65,6 @@ app.use('/api/iluminacion', iluminacionRouter);
 app.use('/api/lecturas', lecturaSensorRouter);
 
 app.use('/api/users', userRouter);
-console.log('DEBUG: Ruta /api/users configurada con userRouter.');
 
 // -----------------------------
 // Middleware Global de Errores
@@ -107,4 +98,4 @@ io.on('connection', (socket) => {
 });
 
 export { app, server, io }; // <-- Exportamos los tres
-export default app;
+
