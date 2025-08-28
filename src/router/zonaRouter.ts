@@ -14,6 +14,7 @@ router.get('/', zonaController.getAll);
 router.get('/activos', zonaController.getAllActivos);
 router.get('/datos-activos', zonaController.getDatosActivos);
 router.get('/invernadero/:id', zonaController.getZonasPorInvernadero);
+router.get('/estadisticas', zonaController.getEstadisticasZonas); 
 
 router.post(
   '/',

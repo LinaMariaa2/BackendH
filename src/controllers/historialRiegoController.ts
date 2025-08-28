@@ -1,34 +1,55 @@
+// src/controllers/historialRiegoController.ts
 
 import { Request, Response } from 'express';
-import { supabase } from '../config/supabaseClient';
+import HistorialRiego from '../models/historialRiego';
+import Invernadero from '../models/invernadero';
+import Zona from '../models/zona'; // Importar Zona
 
-export const getAllRiego = async (req: Request, res: Response) => {
-    try {
-        const { data, error } = await supabase
-            .from('tbl_historial_riego')
-            .select('*')
-            .order('created_at', { ascending: false });
+// Obtener todos los registros de riego
+export const getAllRiego = async (_req: Request, res: Response) => {
+  try {
+    const historial = await HistorialRiego.findAll({
+      // Se incluye la tabla Zona para obtener datos relacionados
+      include: [
+        {
+          model: Zona,
+          as: 'zona', // 'as' debe coincidir con la relación definida en el modelo
+          attributes: ['id_zona', 'nombre'], // Se obtienen solo las columnas necesarias
+        },
+      ],
+      // Se ordena por fecha de activación de forma descendente (más recientes primero)
+      order: [['fecha_activacion', 'DESC']],
+    });
+    console.log("Historial Riego desde backend:", historial);
+    res.json(historial);
+  } catch (error) {
+    console.error('Error al obtener historial de riego:', error);
+    res.status(500).json({ error: 'Error al obtener historial de riego' });
+  }
+};
 
-        if (error) {
-            console.error('Error al obtener historial de riego:', error.message);
-            res.status(500).json({ 
-                message: 'Error al obtener historial de riego desde la base de datos',
-                error: error.message
-            });
-            return; 
-        }
+// Obtener registros de riego por invernadero
+export const getRiegoByInvernadero = async (req: Request, res: Response) => {
+  try {
+    const { invernaderoId } = req.params;
 
-        if (!data || data.length === 0) {
-            res.status(200).json({ message: 'No hay historial de riego disponible', data: [] }); // <-- QUITADO 'return'
-            return; 
-        }
+    const historial = await HistorialRiego.findAll({
+      // Se filtra por la zona que pertenece al invernadero
+      // Esto asume que hay una relación entre Zona e Invernadero
+      include: [
+        {
+          model: Zona,
+          as: 'zona',
+          attributes: ['id_zona', 'nombre'],
+          where: { invernaderoId },
+        },
+      ],
+      order: [['fecha_activacion', 'DESC']],
+    });
 
-        res.status(200).json(data);
-    } catch (err: any) {
-        console.error('Error inesperado en getAllRiego:', err.message);
-        res.status(500).json({ 
-            message: 'Error interno del servidor al procesar el historial de riego',
-            error: err.message
-        });
-    }
+    res.json(historial);
+  } catch (error) {
+    console.error('Error al obtener historial de riego por invernadero:', error);
+    res.status(500).json({ error: 'Error al obtener historial de riego por invernadero' });
+  }
 };

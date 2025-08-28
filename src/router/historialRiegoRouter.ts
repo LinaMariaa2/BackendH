@@ -1,8 +1,13 @@
-import { Router } from 'express';
-import { getAllRiego } from '../controllers/historialRiegoController'; 
+// src/routes/historialRiegoRouter.ts
 
+import { Router } from 'express';
+import { getAllRiego, getRiegoByInvernadero } from '../controllers/historialRiegoController';
 
 const router = Router();
-router.get('/iluminacion',getAllRiego ); 
+
+// Ruta: /historial/riego
+router.get('/', getAllRiego);
+
+
 
 export default router;

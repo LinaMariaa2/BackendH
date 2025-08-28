@@ -1,12 +1,15 @@
-// src/router/historialRouter.ts
 import { Router } from 'express';
-// Importa las funciones controladoras directamente por su nombre
-import { getAllIluminacion } from '../controllers/historialIluminacionController'; 
-
+import { 
+  getAllIluminacion,
+  getIluminacionById,
+  createIluminacion
+} from '../controllers/historialIluminacionController';
 
 const router = Router();
 
-
-router.get('/iluminacion', getAllIluminacion); 
+// Ruta: /historial/iluminacion
+router.get('/', getAllIluminacion);
+router.get('/:id', getIluminacionById);
+router.post('/', createIluminacion);
 
 export default router;
