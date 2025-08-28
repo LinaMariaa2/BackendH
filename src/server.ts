@@ -1,8 +1,6 @@
-// src/server.ts
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
-import { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 
 import { createServer } from 'http';
@@ -18,18 +16,19 @@ const app = express();
 console.log('DEBUG: Middleware express.json() aplicado.');
 app.use(express.json());
 
-
 const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 console.log('DEBUG: Middleware CORS aplicado con origen:', frontendUrl);
 app.use(cors({
   origin: frontendUrl,
-  credentials: true
+  credentials: true,
 }));
 
 console.log('DEBUG: Middleware Morgan para logging aplicado.');
 app.use(morgan('dev'));
 
+// -----------------------------
 // Importación de Routers
+// -----------------------------
 import invernaderoRouter from './router/invernaderoRouter';
 import zonaRouter from './router/zonaRouter';
 import gestionarCultivoRouter from './router/gestionarCultivoRouter';
@@ -46,9 +45,12 @@ import personaRouter from './router/personaRouter';
 import iluminacionRouter from './router/iluminacionRouter'
 import lecturaSensorRouter from './router/lecturaSensorRouter'
 
+
+// -----------------------------
+// Definición de Rutas
+// -----------------------------
 console.log('DEBUG: Definiendo rutas...');
 
-// Montaje de Routers
 app.use('/api/auth', authRouter);
 console.log('DEBUG: Ruta /api/auth configurada con authRouter.');
 
@@ -56,7 +58,11 @@ app.use('/api/invernadero', invernaderoRouter);
 app.use('/api/zona', zonaRouter);
 app.use('/api/cultivos', gestionarCultivoRouter);
 app.use('/api/bitacora', bitacoraRouter);
+
+// 🚨 Nueva ruta para programación de iluminación
 app.use('/api/programacionIluminacion', programacionIluminacionRouter);
+console.log('DEBUG: Ruta /api/programacionIluminacion configurada con programacionIluminacionRouter.');
+
 app.use('/api/programacionRiego', programacionRiegoRouter);
 app.use('/api/historialIluminacion', historialIluminacionRouter);
 app.use('/api/historialRiego', historialRiegoRouter);
@@ -66,11 +72,12 @@ app.use('/api/persona', personaRouter);
 app.use('/api/iluminacion', iluminacionRouter); 
 app.use('/api/lecturas', lecturaSensorRouter);
 
-
 app.use('/api/users', userRouter);
 console.log('DEBUG: Ruta /api/users configurada con userRouter.');
 
-// Middleware de manejo de errores. Debe ir al final.
+// -----------------------------
+// Middleware Global de Errores
+// -----------------------------
 const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
   console.error('DEBUG: Error global capturado:', err.stack);
   res.status(500).json({
@@ -78,6 +85,7 @@ const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFun
     details: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error',
   });
 };
+
 app.use(globalErrorHandler);
 console.log('DEBUG: Manejador de errores global configurado.');
 
@@ -99,3 +107,4 @@ io.on('connection', (socket) => {
 });
 
 export { app, server, io }; // <-- Exportamos los tres
+export default app;

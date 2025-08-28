@@ -1,7 +1,11 @@
 import type { Request, Response } from 'express';
+import { literal } from 'sequelize';
 import Zona from '../models/zona';
 import { actualizarConteoZonas } from '../helpers/actualizarConteoZona';
 import { Invernadero } from '../models/invernadero';
+interface Estadisticas {
+  [key: string]: number;
+}
 
 export class zonaController {
   static getDatosActivos = async (req: Request, res: Response) => {
@@ -13,7 +17,7 @@ export class zonaController {
       });
       res.json(zonas);
     } catch (error: any) {
-      console.error('❌ Error al obtener las zonas activas:', error);
+      console.error('Error al obtener las zonas activas:', error);
       res.status(500).json({
         error: 'Error al obtener zonas activas',
         details: error.message,
@@ -54,7 +58,7 @@ export class zonaController {
 
   static crearZona = async (req: Request, res: Response) => {
     try {
-      const { nombre, descripciones_add, estado, id_cultivo, id_invernadero, estado_iluminacion } = req.body; // 👉 Añadir estado_iluminacion
+      const { nombre, descripciones_add, estado, id_cultivo, id_invernadero, estado_iluminacion } = req.body;
 
       const invernadero = await Invernadero.findByPk(id_invernadero);
       if (!invernadero) {
@@ -72,8 +76,8 @@ export class zonaController {
       const zona = await Zona.create({
         nombre,
         descripciones_add,
-        estado, // 👉 Estado general de la zona
-        estado_iluminacion: estado_iluminacion || 'inactivo', // 👉 Estado de iluminación
+        estado,
+        estado_iluminacion: estado_iluminacion || 'inactivo',
         id_cultivo: id_cultivo || null,
         id_invernadero,
       });
@@ -89,14 +93,14 @@ export class zonaController {
   static actualizarZona = async (req: Request, res: Response) => {
     try {
       const { id_zona } = req.params;
-      const { nombre, descripciones_add, estado, id_cultivo, id_invernadero, estado_iluminacion } = req.body; // 👉 Añadir estado_iluminacion
+      const { nombre, descripciones_add, estado, id_cultivo, id_invernadero, estado_iluminacion } = req.body;
 
       const [updated] = await Zona.update(
         {
           nombre,
           descripciones_add,
-          estado, // 👉 Estado general de la zona
-          estado_iluminacion: estado_iluminacion || 'inactivo', // 👉 Estado de iluminación
+          estado,
+          estado_iluminacion: estado_iluminacion || 'inactivo',
           id_cultivo: id_cultivo || null,
           id_invernadero,
         },
@@ -123,7 +127,7 @@ export class zonaController {
 
   static cambiarEstadoGenerico = async (req: Request, res: Response) => {
     const { id_zona } = req.params;
-    const { estado } = req.body; // Este 'estado' se refiere al estado general de la zona
+    const { estado } = req.body;
 
     const estadosPermitidos = ['activo', 'inactivo', 'mantenimiento'];
     if (!estadosPermitidos.includes(estado)) {
@@ -147,10 +151,10 @@ export class zonaController {
       res.status(400).json({
         error: `No se puede cambiar el estado de una zona porque su invernadero está en estado: "${invernadero.estado}".`,
       });
-      return; // Añadir return aquí
+      return;
     }
 
-    zona.estado = estado; // 👉 Actualiza el estado general de la zona
+    zona.estado = estado;
     await zona.save({ fields: ['estado'] });
 
     res.json({ mensaje: 'Estado de la zona actualizado correctamente', zona });
@@ -167,7 +171,7 @@ export class zonaController {
         return;
       }
 
-      zona.set('estado', 'inactivo'); // 👉 Estado general de la zona
+      zona.set('estado', 'inactivo');
       await zona.save({ fields: ['estado'] });
       await actualizarConteoZonas(zona.id_invernadero);
 
@@ -200,7 +204,7 @@ export class zonaController {
         return;
       }
 
-      zona.estado = 'activo'; // 👉 Estado general de la zona
+      zona.estado = 'activo';
       await zona.save({ fields: ['estado'] });
 
       res.json({ mensaje: 'Zona activada correctamente', zona });
@@ -222,7 +226,7 @@ export class zonaController {
         return;
       }
 
-      zona.set('estado', 'mantenimiento'); // 👉 Estado general de la zona
+      zona.set('estado', 'mantenimiento');
       await zona.save({ fields: ['estado'] });
       await actualizarConteoZonas(zona.id_invernadero);
 
@@ -251,4 +255,35 @@ export class zonaController {
       res.status(500).json({ error: 'Error al eliminar la zona', details: error });
     }
   };
+  
+  // 🟢🟢🟢 CÓDIGO CORREGIDO 🟢🟢🟢
+
+ static getEstadisticasZonas = async (_req: Request, res: Response) => {
+  try {
+    const resultados = await Zona.findAll({
+      attributes: ['estado', [literal('COUNT(*)'), 'cantidad']],
+      group: ['estado'],
+    });
+
+    const estadisticas = resultados.reduce<{ [key: string]: number }>((acc, current) => {
+      const estado = current.getDataValue('estado') as string;
+      const cantidadRaw = current.getDataValue('cantidad') as unknown;
+      const cantidad = Number(cantidadRaw ?? 0);
+      acc[estado] = isNaN(cantidad) ? 0 : cantidad;
+      return acc;
+    }, {});
+
+    res.status(200).json({
+      activo: Number(estadisticas.activo) || 0,
+      inactivo: Number(estadisticas.inactivo) || 0,
+      mantenimiento: Number(estadisticas.mantenimiento) || 0,
+    });
+  } catch (error: any) {
+    console.error('Error al obtener estadísticas de zonas:', error);
+    res.status(500).json({
+      message: 'Error al obtener estadísticas de zonas',
+      details: error?.message || error,
+    });
+  }
 }
+};

@@ -92,6 +92,7 @@ export class invernaderoController {
       });
     }
   };
+  
   static getId = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
@@ -111,8 +112,8 @@ export class invernaderoController {
   static crearInvernadero = async (req: Request, res: Response) => {
     try {
       const totalInvernaderos = await Invernadero.count();
-      if (totalInvernaderos >= 6) {
-        res.status(400).json({ error: 'No se pueden crear más de 5 invernaderos' });
+      if (totalInvernaderos >= 10) {
+        res.status(400).json({ error: 'No se pueden crear más de 10 invernaderos' });
         return;
       }
 
@@ -194,6 +195,7 @@ export class invernaderoController {
     }
   };
 
+  
   static actualizarInvernadero = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;

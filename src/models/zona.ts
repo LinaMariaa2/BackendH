@@ -1,3 +1,4 @@
+// src/models/zona.ts
 import {
   Table,
   Column,
@@ -10,9 +11,11 @@ import {
   ForeignKey,
   BelongsTo,
   AllowNull,
+  HasMany, 
 } from 'sequelize-typescript';
 import { Invernadero } from './invernadero';
-import { GestionCultivo } from './gestionarCultivos'; // Asegúrate de que este import sea correcto
+import { GestionCultivo } from './gestionarCultivos';
+import HistorialRiego from './historialRiego'; 
 
 @Table({ tableName: 'tbl_zona', timestamps: true, underscored: true })
 export class Zona extends Model {
@@ -29,16 +32,14 @@ export class Zona extends Model {
   @Column(DataType.TEXT)
   declare descripciones_add: string;
 
-  // 👉 Columna para el estado general de la zona (activo, inactivo, mantenimiento)
   @AllowNull(false)
   @Column(DataType.ENUM('activo', 'inactivo', 'mantenimiento'))
   declare estado: 'activo' | 'inactivo' | 'mantenimiento';
 
-  // 👉 Nueva columna para el estado de la iluminación (activo, inactivo)
   @AllowNull(false)
   @Column({
     type: DataType.ENUM('activo', 'inactivo'),
-    defaultValue: 'inactivo', // Valor por defecto
+    defaultValue: 'inactivo',
   })
   declare estado_iluminacion: 'activo' | 'inactivo';
 
@@ -58,6 +59,10 @@ export class Zona extends Model {
 
   @BelongsTo(() => GestionCultivo)
   declare cultivo: GestionCultivo;
+
+  // 👉 Define la relación: Una zona tiene muchos registros de historial de riego
+  @HasMany(() => HistorialRiego, 'id_zona')
+  declare historialesRiego: HistorialRiego[];
 
   @CreatedAt
   @Column({ field: 'created_at', type: DataType.DATE })

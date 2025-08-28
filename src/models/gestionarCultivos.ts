@@ -69,6 +69,12 @@ export class GestionCultivo extends Model {
   @Column(DataType.INTEGER)
   declare cantidad_reservada:number;
 
+  @Column({
+  type: DataType.STRING, // Sequelize no entiende "vector", así que usamos tipo genérico
+  field: 'embedding'
+  })
+  declare embedding: any;
+
   //si hay tiempo se integran proyecciones y estimaciones
 
   // ✅ Relación con Zona (requerida por el modelo Zona para @HasMany)
