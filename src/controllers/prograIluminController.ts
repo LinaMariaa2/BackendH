@@ -2,17 +2,15 @@ import { Request, Response } from 'express';
 import { Op } from 'sequelize';
 import ProgramacionIluminacion from '../models/programacionIluminacion';
 import Zona from '../models/zona';
-import zonedTimeToUtc from 'assert';
 import HistorialIluminacion from '../models/historialIluminacion'
 
-export class ProgramacionIluminacionController {
-  static async getAll(req: Request, res: Response) {
+export class PrograIluminController {
+  static getTodasLasProgramaciones = async (_req: Request, res: Response) => {
     try {
-      const programaciones = await ProgramacionIluminacion.findAll();
-      res.json(programaciones);
+      const datos = await ProgramacionIluminacion.findAll();
+      res.json(datos);
     } catch (error) {
-      console.error("Error al obtener programaciones:", error);
-      res.status(500).json({ message: "Error al obtener programaciones" });
+      res.status(500).json({ error: 'Error al obtener las programaciones', details: error });
     }
   };
 
@@ -174,16 +172,48 @@ static async getProgramacionesFuturasPorZona(req: Request, res: Response) {
 }  
 
 
-  static async getByZona(req: Request, res: Response) {
+  static getZonasActivasParaESP32 = async (_req: Request, res: Response) => {
     try {
-      const { zonaId } = req.params;
+      const ahora = new Date();
+
       const programaciones = await ProgramacionIluminacion.findAll({
-        where: { zonaId },
+        where: {
+          fecha_inicio: { [Op.lte]: ahora },
+          fecha_finalizacion: { [Op.gte]: ahora },
+          estado: true // solo las activas
+        },
+        include: [
+          {
+            model: Zona,
+            where: { estado: 'activo' },
+            attributes: ['id_zona', 'estado']
+          }
+        ]
       });
-      res.json(programaciones);
+
+      console.log('🕒 Fecha y hora actual:', ahora.toISOString());
+      console.log('📦 Programaciones activas con zona activa:', programaciones.length);
+      programaciones.forEach(p => {
+        console.log(`🧾 Zona: ${p.id_zona} | Inicio: ${p.fecha_inicio?.toISOString()} | Fin: ${p.fecha_finalizacion?.toISOString()}`);
+      });
+
+      const zonasActivadas: Record<string, boolean> = {};
+      for (let i = 1; i <= 3; i++) {
+        zonasActivadas[i.toString()] = false;
+      }
+
+      programaciones.forEach(p => {
+        if (p.id_zona && zonasActivadas[p.id_zona.toString()] !== undefined) {
+          zonasActivadas[p.id_zona.toString()] = true;
+        }
+      });
+
+      res.json(zonasActivadas);
     } catch (error) {
-      console.error("Error al obtener programaciones por zona:", error);
-      res.status(500).json({ message: "Error al obtener programaciones por zona" });
+      res.status(500).json({
+        error: 'Error al obtener zonas activas',
+        detalle: (error as Error).message || error
+      });
     }
-  }
+  };
 }
