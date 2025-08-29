@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction  } from 'express';
 import Invernadero from '../models/invernadero';
 import Zona from '../models/zona';
 import { actualizarConteoZonas } from '../helpers/actualizarConteoZona';
@@ -303,37 +303,45 @@ export class invernaderoController {
   };
 
   static eliminarInvernadero = async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const invernadero = await Invernadero.findByPk(id);
-      if (!invernadero) {
-        res.status(404).json({ error: 'Invernadero no encontrado' });
-        return;
-      }
+  try {
+    const { id } = req.params;
+    const invernadero = await Invernadero.findByPk(id);
 
-      if (invernadero.estado !== 'inactivo') {
-        res.status(400).json({ error: 'Solo se puede eliminar un invernadero inactivo' });
-        return;
-      }
-
-      const zonasActivas = await invernadero.$count('zonas', {
-        where: { estado: 'activo' }
-      });
-      if (zonasActivas > 0) {
-        res.status(400).json({
-          error: 'No se puede eliminar el invernadero porque tiene zonas activas asociadas'
-        });
-        return;
-      }
-
-      await invernadero.destroy();
-      res.json({ mensaje: 'Invernadero eliminado permanentemente' });
-    } catch (error: any) {
-      console.error('Error al eliminar invernadero:', error);
-      res.status(500).json({
-        error: 'Error al eliminar el invernadero',
-        details: error.message,
-      });
+    if (!invernadero) {
+      res.status(404).json({ error: 'Invernadero no encontrado' });
+      return ;
     }
-  };
+
+    if (invernadero.estado !== 'inactivo') {
+      res.status(400).json({ error: 'Solo se puede eliminar un invernadero inactivo' });
+      return ;
+    }
+
+    const zonasActivas = await invernadero.$count('zonas', {
+      where: { estado: 'activo' }
+    });
+
+    if (zonasActivas > 0) {
+       res.status(400).json({
+        error: 'No se puede eliminar el invernadero porque tiene zonas activas asociadas'
+      });
+      return ;
+    }
+
+    await invernadero.destroy();
+    res.json({ mensaje: 'Invernadero eliminado permanentemente' });
+    return ;
+
+  } catch (err: any) {
+    console.error(err); // 🔹 importante para debug
+    // Manejo de errores conocidos de Sequelize
+    if (err.name === "SequelizeForeignKeyConstraintError") {
+      res.status(400).json({ error: "No se puede eliminar el invernadero porque tiene registros relacionados" });
+      return ;
+    }
+    res.status(500).json({ error: err.message || "Error interno del servidor" });
+    return ;
+  }
+};
+
 }

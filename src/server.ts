@@ -39,6 +39,7 @@ import perfilRouter from './router/perfilRouter';
 import personaRouter from './router/personaRouter';
 import iluminacionRouter from './router/iluminacionRouter'
 import lecturaSensorRouter from './router/lecturaSensorRouter'
+import { errorHandler } from './middlewares/errorHandler';
 
 
 // -----------------------------
@@ -66,6 +67,8 @@ app.use('/api/lecturas', lecturaSensorRouter);
 
 app.use('/api/users', userRouter);
 
+//errore justidicados
+app.use(errorHandler);
 // -----------------------------
 // Middleware Global de Errores
 // -----------------------------

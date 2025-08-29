@@ -86,11 +86,6 @@ static getAll = async (req: Request, res: Response) => {
         return ;
       }
 
-      if (publicacion.importancia === 'alta') {
-        res.status(400).json({ error: 'No se puede eliminar una publicación de importancia alta' });
-       return ;
-    }
-
       await publicacion.destroy();
       res.json({ mensaje: 'Publicación eliminada correctamente' });
     } catch (error) {

@@ -3,6 +3,7 @@ import { invernaderoController } from '../controllers/invernaderoController';
 import {validateInvernaderoId, validateInvernaderoNombreUnico, validateInvernaderoBody, validateInvernaderoUpdate} from '../middlewares/invernaderoValidator';
 import { handleInputErrors } from '../middlewares/validation';
 import { zonaController } from '../controllers/zonaController';
+import { errorHandler } from '../middlewares/errorHandler';
 
 const router = Router();
 
@@ -71,7 +72,7 @@ router.patch(
 router.delete(
   '/:id',
   validateInvernaderoId,
-  handleInputErrors,
+  errorHandler,
   invernaderoController.eliminarInvernadero
 );
 
