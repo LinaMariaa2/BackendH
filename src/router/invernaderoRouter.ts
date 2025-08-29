@@ -6,80 +6,53 @@ import { zonaController } from '../controllers/zonaController';
 
 const router = Router();
 
-// ⚠️ Rutas comentadas porque las funciones no existen en tu InvernaderoController
-// router.get('/', InvernaderoController.getAll);
-// router.get('/activos', InvernaderoController.getAllActivos);
-// router.get('/datos-activos', InvernaderoController.getDatosActivos);
-
 // ✅ Rutas activas que sí existen en tu InvernaderoController
 router.get('/', InvernaderoController.getAllInvernaderos);
 router.get('/por-operario/:idOperario', InvernaderoController.getInvernaderosByOperarioId);
 
 router.post(
-  '/',
-  validateInvernaderoBody,
-  validateInvernaderoNombreUnico,
-  handleInputErrors,
-  InvernaderoController.createInvernadero
+  '/',
+  validateInvernaderoBody,
+  validateInvernaderoNombreUnico,
+  handleInputErrors,
+  InvernaderoController.createInvernadero
 );
 
 router.put(
-  '/:id',
-  validateInvernaderoId,
-  validateInvernaderoUpdate,
-  handleInputErrors,
-  InvernaderoController.updateInvernadero
+  '/:id',
+  validateInvernaderoId,
+  validateInvernaderoUpdate,
+  handleInputErrors,
+  InvernaderoController.updateInvernadero
 );
 
 router.delete(
-  '/:id',
-  validateInvernaderoId,
-  handleInputErrors,
-  InvernaderoController.deleteInvernadero
+  '/:id',
+  validateInvernaderoId,
+  handleInputErrors,
+  InvernaderoController.deleteInvernadero
 );
 
-// ⚠️ Rutas comentadas porque las funciones no existen en tu InvernaderoController
-// router.get(
-//   '/:id',
-//   validateInvernaderoId,
-//   handleInputErrors,
-//   InvernaderoController.getId
-// );
+// ✅ Rutas nuevas y descomentadas para gestionar el estado del invernadero
+router.patch(
+  '/inactivar/:id',
+  validateInvernaderoId,
+  handleInputErrors,
+  InvernaderoController.inactivarInvernadero
+);
 
-// router.patch(
-//   '/inactivar/:id',
-//   validateInvernaderoId,
-//   handleInputErrors,
-//   InvernaderoController.inactivarInvernadero
-// );
+router.patch(
+  '/activar/:id',
+  validateInvernaderoId,
+  handleInputErrors,
+  InvernaderoController.activarInvernadero
+);
 
-// router.patch(
-//   '/activar/:id',
-//   validateInvernaderoId,
-//   handleInputErrors,
-//   InvernaderoController.activarInvernadero
-// );
-
-// router.patch(
-//   '/mantenimiento/:id',
-//   validateInvernaderoId,
-//   handleInputErrors,
-//   InvernaderoController.mantenimientoInvernadero
-// );
-
-// router.patch(
-//   '/:id/estado',
-//   validateInvernaderoId,
-//   handleInputErrors,
-//   InvernaderoController.cambiarEstadoGenerico
-// );
-
-// ⚠️ Ruta comentada porque no hay un controlador para la zona en el archivo proporcionado
-// router.get(
-//   '/:id/zonas',
-//   validateInvernaderoId,
-//   handleInputErrors,
-//   zonaController.getZonasPorInvernadero
-// );
+router.patch(
+  '/mantenimiento/:id',
+  validateInvernaderoId,
+  handleInputErrors,
+  InvernaderoController.mantenimientoInvernadero
+);
 
 export default router;
