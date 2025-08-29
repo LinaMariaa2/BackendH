@@ -1,337 +1,101 @@
-import type { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import Invernadero from '../models/invernadero';
-import Zona from '../models/zona';
-import { actualizarConteoZonas } from '../helpers/actualizarConteoZona';
 import { Persona } from '../models/Persona';
+import { Op } from 'sequelize';
+import { ValidationChain } from 'express-validator';
 
-export class invernaderoController {
-  static getDatosActivos = async (req: Request, res: Response) => {
-    try {
-      const invernaderos = await Invernadero.findAll({
-        where: { estado: 'activo' },
-        attributes: ['id_invernadero', 'nombre'],
-        order: [['id_invernadero', 'ASC']],
-      });
-      res.json(invernaderos);
-    } catch (error: any) {
-      console.error('❌ Error al obtener los invernaderos activos:', error);
-      res.status(500).json({
-        error: 'Error al obtener invernaderos activos',
-        details: error.message,
-      });
-    }
-  };
+export class InvernaderoController {
+  static getDatosActivos(arg0: string, getDatosActivos: any) {
+    throw new Error('Method not implemented.');
+  }
+  static getId(arg0: string, validateInvernaderoId: ValidationChain[], handleInputErrors: (req: Request, res: Response, next: NextFunction) => void, getId: any) {
+    throw new Error('Method not implemented.');
+  }
+  static getAllActivos(arg0: string, getAllActivos: any) {
+    throw new Error('Method not implemented.');
+  }
+  static getAll(arg0: string, getAll: any) {
+    throw new Error('Method not implemented.');
+  }
 
-  // ... (otros métodos existentes) ...
-  static getAll = async (req: Request, res: Response) => {
-    try {
-      const invernaderos = await Invernadero.findAll({
-        include: [{
-          model: Persona,
-          as: 'encargado',
-          attributes: ['id_persona', 'nombre_usuario', 'rol', 'estado'],
-        }],
-        order: [['id_invernadero', 'ASC']],
-      });
+  // Obtener invernaderos por ID de operario (responsable)
+  public static async getInvernaderosByOperarioId(req: Request, res: Response): Promise<void> {
+    const { idOperario } = req.params;
+    try {
+      const invernaderos = await Invernadero.findAll({
+        where: {
+          responsable_id: idOperario,
+          estado: {
+            [Op.in]: ['activo', 'mantenimiento'],
+          },
+        },
+        include: [{ model: Persona, as: 'encargado', attributes: ['id_persona', 'nombre_usuario'] }],
+      });
+      if (invernaderos.length === 0) {
+        res.status(404).json({ message: 'No se encontraron invernaderos para este operario o no están activos.' });
+        return;
+      }
+      res.status(200).json(invernaderos);
+    } catch (error: any) {
+      console.error('Error al obtener invernaderos por operario:', error);
+      res.status(500).json({ error: 'Error interno del servidor al obtener invernaderos.', details: error.message });
+    }
+  }
 
-      for (const inv of invernaderos) {
-        await actualizarConteoZonas(inv.id_invernadero);
-      }
+  public static async getAllInvernaderos(req: Request, res: Response): Promise<void> {
+    try {
+      const invernaderos = await Invernadero.findAll({
+        include: [{ model: Persona, as: 'encargado', attributes: ['nombre_usuario'] }]
+      });
+      res.status(200).json(invernaderos);
+    } catch (error: any) {
+      console.error('Error al obtener todos los invernaderos:', error);
+      res.status(500).json({ error: 'Error interno del servidor.' });
+    }
+  }
 
-      const invernaderosActualizados = await Invernadero.findAll({
-        include: [{
-          model: Persona,
-          as: 'encargado',
-          attributes: ['id_persona', 'nombre_usuario', 'rol', 'estado'],
-        }],
-        order: [['id_invernadero', 'ASC']],
-      });
+  public static async createInvernadero(req: Request, res: Response): Promise<void> {
+    try {
+      const newInvernadero = await Invernadero.create(req.body);
+      res.status(201).json(newInvernadero);
+    } catch (error: any) {
+      console.error('Error al crear invernadero:', error);
+      res.status(500).json({ error: 'Error interno del servidor al crear el invernadero.', details: error.message });
+    }
+  }
 
-      res.json(invernaderosActualizados);
-    } catch (error: any) {
-      console.error('❌ Error al obtener invernaderos:', error);
-      res.status(500).json({
-        error: 'Error al obtener los invernaderos',
-        details: error.message,
-      });
-    }
-  };
+  public static async updateInvernadero(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const [updated] = await Invernadero.update(req.body, {
+        where: { id_invernadero: id }
+      });
+      if (updated) {
+        const updatedInvernadero = await Invernadero.findOne({ where: { id_invernadero: id } });
+        res.status(200).json(updatedInvernadero);
+      } else {
+        res.status(404).json({ message: 'Invernadero no encontrado.' });
+      }
+    } catch (error: any) {
+      console.error('Error al actualizar invernadero:', error);
+      res.status(500).json({ error: 'Error interno del servidor al actualizar el invernadero.', details: error.message });
+    }
+  }
 
-  static getAllActivos = async (req: Request, res: Response) => {
-    try {
-      const invernaderos = await Invernadero.findAll({
-        where: { estado: 'activo' },
-        include: [{
-          model: Persona,
-          as: 'encargado',
-          attributes: ['id_persona', 'nombre_usuario', 'rol', 'estado'],
-        }],
-        order: [['id_invernadero', 'ASC']],
-      });
-
-      for (const inv of invernaderos) {
-        await actualizarConteoZonas(inv.id_invernadero);
-      }
-      
-      const invernaderosActualizados = await Invernadero.findAll({
-        where: { estado: 'activo' },
-        include: [{
-          model: Persona,
-          as: 'encargado',
-          attributes: ['id_persona', 'nombre_usuario', 'rol', 'estado'],
-        }],
-        order: [['id_invernadero', 'ASC']],
-      });
-
-      res.json(invernaderosActualizados);
-    } catch (error: any) {
-      console.error('❌ Error al obtener invernaderos activos:', error);
-      res.status(500).json({
-        error: 'Error al obtener todos los invernaderos activos',
-        details: error.message,
-      });
-    }
-  };
-  static getId = async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const invernadero = await Invernadero.findByPk(id);
-      if (!invernadero) {
-        const error = new Error('Invernadero No encontrado, estas seguro de que existe');
-        res.status(404).json({ error: error.message });
-        return;
-      }
-      res.json(invernadero);
-    } catch (error: any) {
-      console.error('Error al obtener el invernadero:', error);
-      res.status(500).json({ error: 'Error al obtener el invernadero', details: error.message });
-    }
-  };
-
-  static crearInvernadero = async (req: Request, res: Response) => {
-    try {
-      const totalInvernaderos = await Invernadero.count();
-      if (totalInvernaderos >= 6) {
-        res.status(400).json({ error: 'No se pueden crear más de 5 invernaderos' });
-        return;
-      }
-
-      const {
-        nombre,
-        descripcion,
-        zonas_totales,
-        zonas_activas,
-        responsable_id,
-      } = req.body;
-
-      if (!responsable_id) {
-        res.status(400).json({ error: 'Falta el campo responsable_id' });
-        return;
-      }
-
-      const nuevoInvernadero = await Invernadero.create({
-        nombre,
-        descripcion,
-        zonas_totales,
-        zonas_activas,
-        responsable_id,
-      });
-
-      const invernaderoConResponsable = await Invernadero.findByPk(nuevoInvernadero.id_invernadero, {
-        include: [{ model: Persona, as: 'encargado' }],
-      });
-      res.status(201).json(invernaderoConResponsable);
-
-    } catch (error: any) {
-      console.error("Error al crear el invernadero:", error);
-      res.status(500).json({
-        error: 'Error al crear el invernadero',
-        details: error.message,
-      });
-    }
-  };
-
-  static cambiarEstadoGenerico = async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const { estado } = req.body;
-
-      const estadosPermitidos = ['activo', 'inactivo', 'mantenimiento'];
-      if (!estadosPermitidos.includes(estado)) {
-        res.status(400).json({ error: 'Estado no válido' });
-        return;
-      }
-
-      const invernadero = await Invernadero.findByPk(id);
-      if (!invernadero) {
-        res.status(404).json({ error: 'Invernadero no encontrado' });
-        return;
-      }
-
-      if (estado !== 'activo') {
-        const zonasActivas = await Zona.count({
-          where: { id_invernadero: id, estado: 'activo' },
-        });
-
-        if (zonasActivas > 0) {
-          res.status(400).json({
-            error: 'No se puede cambiar el estado porque hay zonas activas asociadas a este invernadero.',
-          });
-          return;
-        }
-      }
-
-      invernadero.estado = estado;
-      await invernadero.save({ fields: ['estado'] });
-
-      res.json({
-        mensaje: 'Estado del invernadero actualizado correctamente',
-        invernadero,
-      });
-    } catch (error: any) {
-      console.error('Error al cambiar estado del invernadero:', error);
-      res.status(500).json({ error: 'Error interno del servidor', details: error.message });
-    }
-  };
-
-  static actualizarInvernadero = async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const [rowsUpdated] = await Invernadero.update(req.body, {
-        where: { id_invernadero: id },
-      });
-      if (rowsUpdated === 0) {
-        res.status(404).json({ error: 'Invernadero no encontrado' });
-        return;
-      }
-      res.json({ mensaje: 'Invernadero actualizado correctamente' });
-    } catch (error: any) {
-      console.error('Error al actualizar invernadero:', error);
-      res.status(500).json({
-        error: 'Error al actualizar el invernadero',
-        details: error.message,
-      });
-    }
-  };
-
-  static inactivarInvernadero = async (req: Request, res: Response) => {
-    const { id } = req.params;
-    try {
-      const zonasActivas = await Zona.count({
-        where: {
-          id_invernadero: Number(id),
-          estado: 'activo',
-        },
-      });
-
-      if (zonasActivas > 0) {
-        res.status(400).json({
-          error: 'No se puede inactivar el invernadero. Tiene zonas activas.',
-        });
-        return;
-      }
-
-      const invernadero = await Invernadero.findByPk(id);
-      if (!invernadero) {
-        res.status(404).json({ error: 'Invernadero no encontrado' });
-        return;
-      }
-
-      invernadero.estado = 'inactivo';
-      await invernadero.save({ fields: ['estado'] });
-
-      res.json({ mensaje: 'Invernadero inactivado correctamente' });
-    } catch (error: any) {
-      console.error('Error al inactivar invernadero:', error);
-      res.status(500).json({ error: 'Error al inactivar invernadero', details: error.message });
-    }
-  };
-
-  static activarInvernadero = async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const invernadero = await Invernadero.findByPk(id);
-      if (!invernadero) {
-        res.status(404).json({ error: 'Invernadero no encontrado' });
-        return;
-      }
-      invernadero.set('estado', 'activo');
-      await invernadero.save({ fields: ['estado'] });
-      res.json({ mensaje: 'Invernadero activado correctamente' });
-    } catch (error: any) {
-      console.error('Error al activar invernadero:', error);
-      res.status(500).json({
-        error: 'Error al activar el invernadero',
-        details: error.message,
-      });
-    }
-  };
-
-  static mantenimientoInvernadero = async (req: Request, res: Response) => {
-    const { id } = req.params;
-    try {
-      const zonasActivas = await Zona.count({
-        where: {
-          id_invernadero: Number(id),
-          estado: 'activo',
-        },
-      });
-
-      if (zonasActivas > 0) {
-        res.status(400).json({
-          error: 'No se puede poner en mantenimiento. Tiene zonas activas.',
-        });
-        return;
-      }
-
-      const invernadero = await Invernadero.findByPk(id);
-      if (!invernadero) {
-        res.status(404).json({ error: 'Invernadero no encontrado' });
-        return;
-      }
-
-      invernadero.estado = 'mantenimiento';
-      await invernadero.save({ fields: ['estado'] });
-
-      res.json({ mensaje: 'Invernadero puesto en mantenimiento correctamente' });
-    } catch (error: any) {
-      console.error('Error al poner en mantenimiento:', error);
-      res.status(500).json({ error: 'Error al poner en mantenimiento', details: error.message });
-    }
-  };
-
-  static eliminarInvernadero = async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const invernadero = await Invernadero.findByPk(id);
-      if (!invernadero) {
-        res.status(404).json({ error: 'Invernadero no encontrado' });
-        return;
-      }
-
-      if (invernadero.estado !== 'inactivo') {
-        res.status(400).json({ error: 'Solo se puede eliminar un invernadero inactivo' });
-        return;
-      }
-
-      const zonasActivas = await invernadero.$count('zonas', {
-        where: { estado: 'activo' }
-      });
-      if (zonasActivas > 0) {
-        res.status(400).json({
-          error: 'No se puede eliminar el invernadero porque tiene zonas activas asociadas'
-        });
-        return;
-      }
-
-      await invernadero.destroy();
-      res.json({ mensaje: 'Invernadero eliminado permanentemente' });
-    } catch (error: any) {
-      console.error('Error al eliminar invernadero:', error);
-      res.status(500).json({
-        error: 'Error al eliminar el invernadero',
-        details: error.message,
-      });
-    }
-  };
+  public static async deleteInvernadero(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const deleted = await Invernadero.destroy({
+        where: { id_invernadero: id }
+      });
+      if (deleted) {
+        res.status(200).json({ message: 'Invernadero eliminado exitosamente.' });
+      } else {
+        res.status(404).json({ message: 'Invernadero no encontrado.' });
+      }
+    } catch (error: any) {
+      console.error('Error al eliminar invernadero:', error);
+      res.status(500).json({ error: 'Error interno del servidor al eliminar el invernadero.', details: error.message });
+    }
+  }
 }
