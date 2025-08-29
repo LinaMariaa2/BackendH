@@ -95,7 +95,7 @@ export class ProgramacionIluminacionController {
       res.status(500).json({ message: "Error al cambiar el estado de la programación" });
     }
   }
-
+//prohgramacion controller, comentario de ensayo
 
   static async eliminarProgramacion(req: Request, res: Response) {
     try {
