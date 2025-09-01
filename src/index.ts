@@ -9,7 +9,9 @@ const port = process.env.PORT || 4000;
 async function startServer() {
     try {
         await sequelize.authenticate();
-        await sequelize.sync({ alter: true });
+        //await sequelize.sync({ alter: true });
+        await sequelize.sync({ alter: true, match: /^(?!tbl_gestion_cultivos).*$/ }); // vamos a dejar que todo se sincronice menos la tbl de cultivos
+        
 
         server.listen(port, () => {
             console.log(`Servidor backend corriendo en http://localhost:${port}`);
