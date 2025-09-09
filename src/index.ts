@@ -8,18 +8,22 @@ const port = process.env.PORT || 4000;
 
 async function startServer() {
     try {
+        console.log('DEBUG: Intentando autenticar con la base de datos...');
         await sequelize.authenticate();
-        //await sequelize.sync({ alter: true });
-        await sequelize.sync({ alter: true, match: /^(?!tbl_gestion_cultivos).*$/ }); // vamos a dejar que todo se sincronice menos la tbl de cultivos
-        
+        console.log('DEBUG: Autenticación exitosa ✅');
+
+        console.log('DEBUG: Sincronizando modelos...');
+        await sequelize.sync({ alter: true, match: /^(?!tbl_gestion_cultivos).*$/ });
+        console.log('DEBUG: Modelos sincronizados ✅');
 
         server.listen(port, () => {
-            console.log(`Servidor backend corriendo en http://localhost:${port}`);
+            console.log(`🚀 Servidor backend corriendo en http://localhost:${port}`);
         });
     } catch (error) {
-        console.error('ERROR FATAL: Error durante la inicialización del servidor:', error);
+        console.error('❌ ERROR FATAL: Error durante la inicialización del servidor:', error);
         process.exit(1);
     }
 }
+
 
 startServer();

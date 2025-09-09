@@ -1,6 +1,11 @@
 import { Router } from 'express';
-import { invernaderoController } from '../controllers/invernaderoController';
-import {validateInvernaderoId, validateInvernaderoNombreUnico, validateInvernaderoBody, validateInvernaderoUpdate} from '../middlewares/invernaderoValidator';
+import invernaderoController from '../controllers/invernaderoController'; 
+import {
+  validateInvernaderoId,
+  validateInvernaderoNombreUnico,
+  validateInvernaderoBody,
+  validateInvernaderoUpdate
+} from '../middlewares/invernaderoValidator';
 import { handleInputErrors } from '../middlewares/validation';
 import { zonaController } from '../controllers/zonaController';
 import { errorHandler } from '../middlewares/errorHandler';
@@ -9,7 +14,13 @@ const router = Router();
 
 router.get('/', invernaderoController.getAll);
 router.get('/activos', invernaderoController.getAllActivos);
-router.get('/datos-activos', invernaderoController.getDatosActivos); 
+router.get('/datos-activos', invernaderoController.getDatosActivos);
+
+router.get(
+  '/operario/:id_operario',
+  handleInputErrors,
+  invernaderoController.getInvernaderosPorOperario
+);
 
 router.get(
   '/:id/zonas',
