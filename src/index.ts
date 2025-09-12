@@ -1,11 +1,9 @@
 import dotenv from 'dotenv';
 dotenv.config();
-
 import { server } from './server';
 import { sequelize } from './config/db';
 
 const port = process.env.PORT || 4000;
-
 async function startServer() {
     try {
         console.log('DEBUG: Intentando autenticar con la base de datos...');
