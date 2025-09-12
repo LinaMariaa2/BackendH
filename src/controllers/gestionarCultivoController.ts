@@ -1,6 +1,8 @@
 import type { Request, Response } from 'express';
 import { GestionCultivo } from '../models/gestionarCultivos';
 import Zona from '../models/zona';
+import { validationResult } from "express-validator";
+
 
 export class gestionCultivoController {
   // Obtener todos los cultivos
@@ -33,9 +35,9 @@ export class gestionCultivoController {
   static cambiarEstado = async (req: Request, res: Response) => {
   const { id, estado } = req.params;
   if (!['activo', 'finalizado'].includes(estado)) {
-    res.status(400).json({ error: 'Estado no válido' });
-    return ;
-  }
+  res.status(400).json({ error: 'Estado no válido' });
+  return;
+}
   try {
     const cultivo = await GestionCultivo.findByPk(id);
     if (!cultivo) {
@@ -43,7 +45,7 @@ export class gestionCultivoController {
       return ;
     }
 
-    cultivo.estado = estado;
+    cultivo.estado = estado as 'activo' | 'finalizado';
     await cultivo.save();
 
      res.json({ mensaje: 'Estado actualizado', cultivo });
@@ -69,22 +71,51 @@ export class gestionCultivoController {
     }
   };
 
-  // Crear cultivo
-  static crearCultivo = async (req: Request, res: Response) => {
-    try {
-      const cultivo = await GestionCultivo.create({
-        ...req.body,
-        estado: 'activo', // forzamos el estado inicial
-      });
+// Crear cultivo
+static crearCultivo = async (req: Request, res: Response): Promise<void> => {
+  // ✅ Validar primero
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({
+      errores: errors.array().reduce((acc, err) => {
+        if ("param" in err) {
+          acc[err.param as string] = err.msg;
+        } else if ("path" in err) {
+          acc[err.path as string] = err.msg;
+        }
+        return acc;
+      }, {} as Record<string, string>),
+    });
+    return; // 👈 evita seguir ejecutando
+  }
 
-      // Actualiza el cultivo actual de la zona (si usas zonaCultivoActual o similar)
+  try {
+    const cultivo = await GestionCultivo.create({
+      ...req.body,
+      estado: "activo", // estado inicial
+    });
+
+    res.status(201).json({
+      mensaje: "Cultivo registrado correctamente",
+      cultivo,
+    });
+  }catch (error: any) {
+  console.error("❌ Error al registrar cultivo:", error);
+
+  res.status(500).json({
+    error: "Error al registrar cultivo",
+    details: error.message, // <-- para ver el mensaje real
+    stack: error.stack      // <-- opcional, para depurar
+    
+  });
+  return;
+}
+
   
-      res.status(201).json({ mensaje: 'Cultivo registrado correctamente', cultivo });
-    } catch (error) {
-      res.status(500).json({ error: 'Error al registrar cultivo', details: error });
-    }
-    console.log("📥 Datos recibidos:", req.body);
-  };
+
+  console.log("📥 Datos recibidos:", req.body);
+};
+
 
   static eliminarCultivo = async (req: Request, res: Response) => {
   try {
@@ -145,7 +176,7 @@ static actualizarProduccion = async (req: Request, res: Response) => {
 
     if (cantidad_cosechada !== null) {
       const diferencia = cantidad_cosechada - cultivo.cantidad_cosechada;
-      cultivo.cantidad_disponible += diferencia;
+      cultivo.cantidad_disponible = (cultivo.cantidad_disponible ?? 0) + diferencia;
       cultivo.cantidad_cosechada = cantidad_cosechada;
     }
 

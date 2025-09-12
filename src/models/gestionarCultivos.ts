@@ -9,54 +9,60 @@ import {
   UpdatedAt,
   PrimaryKey,
   AutoIncrement,
-  AllowNull
+  AllowNull,
 } from 'sequelize-typescript';
 import Zona from './zona';
+import Persona from './Persona'; 
+import { truncate } from 'fs/promises';
 
 @Table({ tableName: 'tbl_gestion_cultivos', timestamps: true })
-export class GestionCultivo extends Model {
+export class GestionCultivo extends Model<GestionCultivo> {
   @PrimaryKey
   @AutoIncrement
-  @Column
+  @Column(DataType.INTEGER)
   declare id_cultivo: number;
 
   @AllowNull(false)
   @Column(DataType.STRING(100))
   declare nombre_cultivo: string;
 
+  @AllowNull(true)
   @Column(DataType.TEXT)
-  declare descripcion: string;
+  declare descripcion: string | null;
 
-
-
+  @AllowNull(false)
   @Column(DataType.FLOAT)
   declare temp_min: number;
 
+  @AllowNull(false)
   @Column(DataType.FLOAT)
   declare temp_max: number;
 
+  @AllowNull(false)
   @Column(DataType.FLOAT)
   declare humedad_min: number;
 
+  @AllowNull(false)
   @Column(DataType.FLOAT)
   declare humedad_max: number;
 
-
-
+  @AllowNull(false)
   @Column(DataType.DATE)
   declare fecha_inicio: Date;
 
+  @AllowNull(true)
   @Column(DataType.DATE)
-  declare fecha_fin?: Date;
+  declare fecha_fin?: Date | null;
 
+  @AllowNull(false)
   @Column(DataType.ENUM('activo', 'finalizado'))
-  declare estado: string;
+  declare estado: 'activo' | 'finalizado';
 
+  @AllowNull(true)
   @Column(DataType.TEXT)
-  declare imagenes: string;
+  declare imagenes: string | null;
 
-  //produccion y disponibilidad
-
+  // Producción y disponibilidad
   @Column(DataType.ENUM('kilogramos', 'unidades'))
   declare unidad_medida: 'kilogramos' | 'unidades';
 
@@ -69,23 +75,31 @@ export class GestionCultivo extends Model {
   @Column(DataType.INTEGER)
   declare cantidad_reservada:number;
 
-    @Column({
-    type: DataType.TEXT, // Sequelize solo lo entiende como texto
-    field: 'embedding'
-  })
-  declare embedding: number[]; // lo manejamos como array en el código
+  // 🔹 No tocamos tu configuración de embedding
+  @Column({ type: DataType.TEXT, field: 'embedding' }) 
+  declare embedding: number[];
 
-
-  //si hay tiempo se integran proyecciones y estimaciones
-
-  // ✅ Relación con Zona (requerida por el modelo Zona para @HasMany)
+  // Relación con Zona
   @ForeignKey(() => Zona)
-  @AllowNull(true) // si quieres que sea opcional
+  @AllowNull(true)
   @Column(DataType.INTEGER)
   declare id_zona: number | null;
 
   @BelongsTo(() => Zona)
   declare zona?: Zona;
+
+  // Relación con Persona (responsable obligatorio)
+  @ForeignKey(() => Persona)
+  @AllowNull(false)
+  @Column({
+    type: DataType.INTEGER,
+    field: 'responsable_id',
+    onDelete: 'CASCADE',
+  })
+  declare responsable_id: number;
+
+  @BelongsTo(() => Persona, { foreignKey: 'responsable_id', as: 'encargado' })
+  declare persona: Persona;
 
   @CreatedAt
   @Column({ field: 'created_at' })
