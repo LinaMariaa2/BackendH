@@ -2,9 +2,39 @@ import type { Request, Response } from 'express';
 import { GestionCultivo } from '../models/gestionarCultivos';
 import Zona from '../models/zona';
 import { validationResult } from "express-validator";
-
+import { Persona } from '../models/Persona';
 
 export class gestionCultivoController {
+
+  static getPorOperario = async (req: Request, res: Response) => {
+  try {
+    const { id_operario } = req.params;
+
+    if (!id_operario || isNaN(Number(id_operario))) {
+      res.status(400).json({ error: 'ID de operario no válido.' });
+      return;
+    }
+
+    const cultivos = await GestionCultivo.findAll({
+      where: { responsable_id: Number(id_operario) }, 
+      order: [['fecha_inicio', 'DESC']],
+      include: [{
+        model: Zona,
+        as: 'zona',
+        attributes: ['id_zona', 'nombre']
+      }]
+    });
+
+    res.json(cultivos);
+  } catch (error: any) {
+    console.error('❌ Error al obtener cultivos del operario:', error);
+    res.status(500).json({
+      error: 'Error al obtener cultivos del operario',
+      details: error.message,
+    });
+  }
+};
+
   // Obtener todos los cultivos
   static getAll = async (_req: Request, res: Response) => {
     try {
