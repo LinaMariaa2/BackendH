@@ -1,16 +1,17 @@
 import { Request, Response } from "express";
 import Visita from "../models/visita";
 import { Op } from "sequelize";
+import { io } from "../server"; // Asegúrate de que el archivo server.ts exporte 'io'
 
 export class visitaController {
-  /**
-   * @description Crea una nueva visita en la base de datos.
-   * @route POST /api/visita/crear
-   */
+  
   static crear = async (req: Request, res: Response): Promise<void> => {
     try {
       const datos = req.body;
       const nuevaVisita = await Visita.create(datos);
+      
+      io.emit('nuevaNotificacion', nuevaVisita);
+
       res.status(201).json({
         message: "Visita creada exitosamente",
         visita: nuevaVisita,
@@ -21,10 +22,6 @@ export class visitaController {
     }
   };
 
-  /**
-   * @description Obtiene todas las visitas de la base de datos, ordenadas por fecha de creación descendente.
-   * @route GET /api/visita
-   */
   static obtenerTodas = async (req: Request, res: Response): Promise<void> => {
     try {
       const visitas = await Visita.findAll({
@@ -37,10 +34,6 @@ export class visitaController {
     }
   };
 
-  /**
-   * @description Obtiene una visita por su ID.
-   * @route GET /api/visita/:id
-   */
   static obtenerPorId = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -56,10 +49,6 @@ export class visitaController {
     }
   };
 
-  /**
-   * @description Actualiza una visita por su ID.
-   * @route PUT /api/visita/actualizar/:id
-   */
   static actualizar = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -79,10 +68,6 @@ export class visitaController {
     }
   };
 
-  /**
-   * @description Elimina una visita por su ID.
-   * @route DELETE /api/visita/eliminar/:id
-   */
   static eliminar = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -100,10 +85,6 @@ export class visitaController {
     }
   };
 
-  /**
-   * @description Marca una visita específica como leída.
-   * @route PUT /api/visita/marcar-leida/:id
-   */
   static marcarComoLeida = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -114,6 +95,7 @@ export class visitaController {
         res.status(404).json({ message: "Visita no encontrada" });
         return;
       }
+      io.emit('visitaActualizada', { id_visita: id, leida: true });
       res.status(200).json({ message: "Notificación marcada como leída" });
     } catch (error) {
       console.error("Error al marcar como leída:", error);
@@ -121,10 +103,6 @@ export class visitaController {
     }
   };
 
-  /**
-   * @description Marca todas las visitas no leídas como leídas.
-   * @route PUT /api/visita/marcar-todas-leidas
-   */
   static marcarTodasComoLeidas = async (req: Request, res: Response): Promise<void> => {
     try {
       const [filasActualizadas] = await Visita.update({ leida: true }, {
@@ -132,6 +110,7 @@ export class visitaController {
           leida: false,
         },
       });
+      io.emit('notificacionesActualizadas');
       res.status(200).json({ message: `Se marcaron ${filasActualizadas} notificaciones como leídas.` });
     } catch (error) {
       console.error("Error al marcar todas como leídas:", error);
