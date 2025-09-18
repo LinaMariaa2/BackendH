@@ -37,14 +37,13 @@ import imagenRouter from './router/imagenRouter';
 import authRouter from './router/authRouter';
 import perfilRouter from './router/perfilRouter';
 import personaRouter from './router/personaRouter';
-import iluminacionRouter from './router/iluminacionRouter'
-import lecturaSensorRouter from './router/lecturaSensorRouter'
+import iluminacionRouter from './router/iluminacionRouter';
+import lecturaSensorRouter from './router/lecturaSensorRouter';
 import { errorHandler } from './middlewares/errorHandler';
+import visitaRouter from './router/visitaRouter';
 
 
-// -----------------------------
 // Definición de Rutas
-// -----------------------------
 
 app.use('/api/auth', authRouter);
 
@@ -53,7 +52,7 @@ app.use('/api/zona', zonaRouter);
 app.use('/api/cultivos', gestionarCultivoRouter);
 app.use('/api/bitacora', bitacoraRouter);
 
-// 🚨 Nueva ruta para programación de iluminación
+app.use('/api/visita', visitaRouter);
 app.use('/api/programacionIluminacion', programacionIluminacionRouter);
 
 app.use('/api/programacionRiego', programacionRiegoRouter);

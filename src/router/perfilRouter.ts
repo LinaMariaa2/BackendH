@@ -5,18 +5,14 @@ import { UserController } from '../controllers/UserController';
 import { authenticateJWT, authorizeRoles } from '../middlewares/authMiddleware';
 const router = Router();
 
-router.get(
-    '/', 
-    authenticateJWT,
+router.get('/', authenticateJWT,
     (req: Request, res: Response, next: NextFunction) => {
         UserController.getAuthenticatedUserProfile(req, res).catch(next);
     }
 );
 
 
-router.put(
-    '/update',
-    authenticateJWT,
+router.put('/update',authenticateJWT,
     (req: Request, res: Response, next: NextFunction) => {
         UserController.updateAuthenticatedUserProfile(req, res).catch(next);
     }
