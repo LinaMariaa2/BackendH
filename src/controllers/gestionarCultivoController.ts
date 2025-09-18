@@ -3,6 +3,8 @@ import { GestionCultivo } from '../models/gestionarCultivos';
 import Zona from '../models/zona';
 import { validationResult } from "express-validator";
 import { Persona } from '../models/Persona';
+import axios from 'axios';
+
 
 export class gestionCultivoController {
 
@@ -102,50 +104,54 @@ export class gestionCultivoController {
   };
 
 // Crear cultivo
+
 static crearCultivo = async (req: Request, res: Response): Promise<void> => {
-  // ✅ Validar primero
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    res.status(400).json({
-      errores: errors.array().reduce((acc, err) => {
-        if ("param" in err) {
-          acc[err.param as string] = err.msg;
-        } else if ("path" in err) {
-          acc[err.path as string] = err.msg;
-        }
-        return acc;
-      }, {} as Record<string, string>),
-    });
-    return; // 👈 evita seguir ejecutando
-  }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({
+        errores: errors.array().reduce((acc, err) => {
+          if ("param" in err) acc[err.param as string] = err.msg;
+          else if ("path" in err) acc[err.path as string] = err.msg;
+          return acc;
+        }, {} as Record<string, string>),
+      });
+      return;
+    }
 
-  try {
-    const cultivo = await GestionCultivo.create({
-      ...req.body,
-      estado: "activo", // estado inicial
-    });
+    try {
+      // ✅ Crear cultivo con campos null donde aplique
+      const cultivo = await GestionCultivo.create(
+        {
+          ...req.body,
+          estado: "activo",
+          temp_min: null,
+          temp_max: null,
+          humedad_min: null,
+          humedad_max: null,
+        } as any
+      );
 
-    res.status(201).json({
-      mensaje: "Cultivo registrado correctamente",
-      cultivo,
-    });
-  }catch (error: any) {
-  console.error("❌ Error al registrar cultivo:", error);
+      // ✅ Disparar webhook a n8n
+      await axios.post("https://n8n-production-6d6d.up.railway.app/webhook/cultivo-ia", {
+        id_cultivo: cultivo.id_cultivo,
+        nombre_cultivo: cultivo.nombre_cultivo,
+        descripcion: cultivo.descripcion,
+      });
 
-  res.status(500).json({
-    error: "Error al registrar cultivo",
-    details: error.message, // <-- para ver el mensaje real
-    stack: error.stack      // <-- opcional, para depurar
-    
-  });
-  return;
-}
-
-  
-
-  console.log("📥 Datos recibidos:", req.body);
-};
-
+      res.status(201).json({
+        mensaje:
+          "Cultivo registrado correctamente (IA completará variables ideales en unos segundos)",
+        cultivo,
+      });
+    } catch (error: any) {
+      console.error("❌ Error al registrar cultivo:", error);
+      res.status(500).json({
+        error: "Error al registrar cultivo",
+        details: error.message,
+        stack: error.stack,
+      });
+    }
+  };
 
   static eliminarCultivo = async (req: Request, res: Response) => {
   try {

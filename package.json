@@ -12,6 +12,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.50.3",
     "@types/jsonwebtoken": "^8.5.9",
+    "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
     "colors": "^1.4.0",
     "cors": "^2.8.5",
@@ -31,6 +32,7 @@
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
+    "@types/axios": "^0.9.36",
     "@types/cors": "^2.8.19",
     "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.3",

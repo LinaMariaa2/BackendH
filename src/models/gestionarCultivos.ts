@@ -30,21 +30,21 @@ export class GestionCultivo extends Model<GestionCultivo> {
   @Column(DataType.TEXT)
   declare descripcion: string | null;
 
-  @AllowNull(false)
+  @AllowNull(true)
   @Column(DataType.FLOAT)
-  declare temp_min: number;
+  declare temp_min: number | null;
 
-  @AllowNull(false)
+  @AllowNull(true)
   @Column(DataType.FLOAT)
-  declare temp_max: number;
+  declare temp_max: number | null;
 
-  @AllowNull(false)
+  @AllowNull(true)
   @Column(DataType.FLOAT)
-  declare humedad_min: number;
+  declare humedad_min: number | null;
 
-  @AllowNull(false)
+  @AllowNull(true)
   @Column(DataType.FLOAT)
-  declare humedad_max: number;
+  declare humedad_max: number | null;
 
   @AllowNull(false)
   @Column(DataType.DATE)
@@ -75,7 +75,7 @@ export class GestionCultivo extends Model<GestionCultivo> {
   @Column(DataType.INTEGER)
   declare cantidad_reservada:number;
 
-  // 🔹 No tocamos tu configuración de embedding
+  // NO tocar configuración de embedding
   @Column({ type: DataType.TEXT, field: 'embedding' }) 
   declare embedding: number[];
 

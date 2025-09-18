@@ -23,28 +23,28 @@ export const validateCultivoBody = [
     .isString().withMessage('La descripción debe ser texto'),
 
   // Validaciones de temperaturas
-  body('temp_min')
-    .isFloat({ min: 1, max: 100 }).withMessage('La temperatura mínima debe estar entre 1 y 100'),
-  body('temp_max')
-    .isFloat({ min: 1, max: 100 }).withMessage('La temperatura máxima debe estar entre 1 y 100')
-    .custom((value, { req }) => {
-      if (req.body.temp_min && value < req.body.temp_min) {
-        throw new Error('La temperatura máxima no puede ser menor que la mínima');
-      }
-      return true;
-    }),
+  // body('temp_min')
+  //   .isFloat({ min: 1, max: 100 }).withMessage('La temperatura mínima debe estar entre 1 y 100'),
+  // body('temp_max')
+  //   .isFloat({ min: 1, max: 100 }).withMessage('La temperatura máxima debe estar entre 1 y 100')
+  //   .custom((value, { req }) => {
+  //     if (req.body.temp_min && value < req.body.temp_min) {
+  //       throw new Error('La temperatura máxima no puede ser menor que la mínima');
+  //     }
+  //     return true;
+  //   }),
 
-  // Validaciones de humedades
-  body('humedad_min')
-    .isFloat({ min: 1, max: 100 }).withMessage('La humedad mínima debe estar entre 1 y 100'),
-  body('humedad_max')
-    .isFloat({ min: 1, max: 100 }).withMessage('La humedad máxima debe estar entre 1 y 100')
-    .custom((value, { req }) => {
-      if (req.body.humedad_min && value < req.body.humedad_min) {
-        throw new Error('La humedad máxima no puede ser menor que la mínima');
-      }
-      return true;
-    }),
+  // // Validaciones de humedades
+  // body('humedad_min')
+  //   .isFloat({ min: 1, max: 100 }).withMessage('La humedad mínima debe estar entre 1 y 100'),
+  // body('humedad_max')
+  //   .isFloat({ min: 1, max: 100 }).withMessage('La humedad máxima debe estar entre 1 y 100')
+  //   .custom((value, { req }) => {
+  //     if (req.body.humedad_min && value < req.body.humedad_min) {
+  //       throw new Error('La humedad máxima no puede ser menor que la mínima');
+  //     }
+  //     return true;
+  //   }),
 
   body('fecha_inicio')
     .notEmpty().withMessage('Fecha de inicio obligatoria')
