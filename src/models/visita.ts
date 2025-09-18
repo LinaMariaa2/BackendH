@@ -1,54 +1,41 @@
-import { 
-  Table, Column, Model, PrimaryKey, AutoIncrement, 
-  DataType, AllowNull, CreatedAt, UpdatedAt, Default 
-} from 'sequelize-typescript';
+import { Table, Column, Model, DataType, PrimaryKey, AutoIncrement } from 'sequelize-typescript';
 
-@Table({ tableName: 'tbl_visitas', timestamps: true })
-export class Visita extends Model {
+@Table({
+  tableName: 'visita',
+  timestamps: true,
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+})
+export class Visita extends Model<Visita> {
   @PrimaryKey
   @AutoIncrement
-  @Column
-  declare id_visita: number;
+  @Column({
+    type: DataType.INTEGER,
+    field: 'id_visita',
+  })
+  id_visita!: number;
 
-  @AllowNull(false)
-  @Column(DataType.STRING(100))
-  declare nombre: string;
+  @Column({
+    type: DataType.STRING(255),
+    field: 'nombre_visitante',
+    allowNull: false,
+  })
+  nombre_visitante!: string;
 
-  @AllowNull(false)
-  @Column(DataType.STRING(120))
-  declare correo: string;
+  @Column({
+    type: DataType.STRING(255),
+    field: 'motivo',
+    allowNull: true,
+  })
+  motivo!: string;
 
-  @AllowNull(false)
-  @Column(DataType.STRING(50))
-  declare identificacion: string;
-
-  @AllowNull(false)
-  @Column(DataType.STRING(20))
-  declare telefono: string;
-
-  @AllowNull(false)
-  @Column(DataType.STRING(100))
-  declare ciudad: string;
-
-  @AllowNull(false)
-  @Column(DataType.DATE)
-  declare fecha_visita: Date;
-
-  @AllowNull(false)
-  @Column(DataType.TEXT)
-  declare motivo: string;
-
-  @Default('pendiente')
-  @Column(DataType.ENUM('pendiente', 'aceptada', 'rechazada'))
-  declare estado: 'pendiente' | 'aceptada' | 'rechazada';
-
-  @CreatedAt
-  @Column({ field: 'created_at' })
-  declare createdAt: Date;
-
-  @UpdatedAt
-  @Column({ field: 'updated_at' })
-  declare updatedAt: Date;
+  @Column({
+    type: DataType.BOOLEAN,
+    field: 'leida',
+    defaultValue: false,
+    allowNull: false,
+  })
+  leida!: boolean;
 }
 
 export default Visita;

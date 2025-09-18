@@ -3,11 +3,15 @@ import { visitaController } from '../controllers/visitaController';
 
 const router = Router();
 
-router.get('/', visitaController.getAll);
-router.get('/:id', visitaController.getById);
-router.post('/', visitaController.crear);
-router.put('/:id', visitaController.actualizar);
-router.delete('/:id', visitaController.eliminar);
-router.patch('/:id/estado', visitaController.cambiarEstado);
+// Rutas CRUD
+router.get('/', visitaController.obtenerTodas);
+router.get('/:id', visitaController.obtenerPorId);
+router.post('/crear', visitaController.crear);
+router.put('/actualizar/:id', visitaController.actualizar);
+router.delete('/eliminar/:id', visitaController.eliminar);
+
+// Otras rutas
+router.put('/marcar-leida/:id', visitaController.marcarComoLeida);
+router.put('/marcar-todas-leidas', visitaController.marcarTodasComoLeidas);
 
 export default router;

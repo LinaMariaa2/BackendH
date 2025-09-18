@@ -1,100 +1,141 @@
-import { Request, Response } from 'express';
-import Visita from '../models/visita';
+import { Request, Response } from "express";
+import Visita from "../models/visita";
+import { Op } from "sequelize";
 
 export class visitaController {
-  // Obtener todas las visitas
-  static getAll = async (_req: Request, res: Response) => {
+  /**
+   * @description Crea una nueva visita en la base de datos.
+   * @route POST /api/visita/crear
+   */
+  static crear = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const datos = req.body;
+      const nuevaVisita = await Visita.create(datos);
+      res.status(201).json({
+        message: "Visita creada exitosamente",
+        visita: nuevaVisita,
+      });
+    } catch (error) {
+      console.error("Error al crear la visita:", error);
+      res.status(500).json({ message: "Error al crear la visita", error });
+    }
+  };
+
+  /**
+   * @description Obtiene todas las visitas de la base de datos, ordenadas por fecha de creación descendente.
+   * @route GET /api/visita
+   */
+  static obtenerTodas = async (req: Request, res: Response): Promise<void> => {
     try {
       const visitas = await Visita.findAll({
-        order: [['fecha_visita', 'ASC']],
+        order: [['createdAt', 'DESC']]
       });
-      res.json(visitas);
+      res.status(200).json(visitas);
     } catch (error) {
-      res.status(500).json({ error: 'Error al obtener las visitas', details: error });
+      console.error("Error al obtener las visitas:", error);
+      res.status(500).json({ message: "Error al obtener las visitas", error });
     }
   };
 
-  // Obtener visita por ID
-  static getById = async (req: Request, res: Response) => {
+  /**
+   * @description Obtiene una visita por su ID.
+   * @route GET /api/visita/:id
+   */
+  static obtenerPorId = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       const visita = await Visita.findByPk(id);
       if (!visita) {
-        res.status(404).json({ error: 'Visita no encontrada' });
+        res.status(404).json({ message: "Visita no encontrada" });
         return;
       }
-      res.json(visita);
+      res.status(200).json(visita);
     } catch (error) {
-      res.status(500).json({ error: 'Error al obtener la visita', details: error });
+      console.error("Error al obtener la visita por ID:", error);
+      res.status(500).json({ message: "Error al obtener la visita", error });
     }
   };
 
-  // Crear nueva visita
-  static crear = async (req: Request, res: Response) => {
-    try {
-      const nuevaVisita = await Visita.create(req.body);
-
-      // Si tienes socket.io conectado:
-      // req.app.get('io').emit('nueva-visita', nuevaVisita);
-
-      res.status(201).json({ mensaje: 'Visita registrada correctamente', nuevaVisita });
-    } catch (error) {
-      res.status(500).json({ error: 'Error al registrar la visita', details: error });
-    }
-  };
-
-  // Actualizar visita
-  static actualizar = async (req: Request, res: Response) => {
+  /**
+   * @description Actualiza una visita por su ID.
+   * @route PUT /api/visita/actualizar/:id
+   */
+  static actualizar = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const [updated] = await Visita.update(req.body, { where: { id_visita: id } });
-
-      if (updated === 0) {
-        res.status(404).json({ error: 'Visita no encontrada' });
+      const datos = req.body;
+      const [filasActualizadas, [visitaActualizada]] = await Visita.update(datos, {
+        where: { id_visita: id },
+        returning: true,
+      });
+      if (filasActualizadas === 0) {
+        res.status(404).json({ message: "Visita no encontrada" });
         return;
       }
-
-      res.json({ mensaje: 'Visita actualizada correctamente' });
+      res.status(200).json({ message: "Visita actualizada", visita: visitaActualizada });
     } catch (error) {
-      res.status(500).json({ error: 'Error al actualizar la visita', details: error });
+      console.error("Error al actualizar la visita:", error);
+      res.status(500).json({ message: "Error al actualizar la visita", error });
     }
   };
 
-  // Eliminar visita
-  static eliminar = async (req: Request, res: Response) => {
+  /**
+   * @description Elimina una visita por su ID.
+   * @route DELETE /api/visita/eliminar/:id
+   */
+  static eliminar = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const visita = await Visita.findByPk(id);
-      if (!visita) {
-        res.status(404).json({ error: 'Visita no encontrada' });
+      const filasEliminadas = await Visita.destroy({
+        where: { id_visita: id },
+      });
+      if (filasEliminadas === 0) {
+        res.status(404).json({ message: "Visita no encontrada" });
         return;
       }
-
-      await visita.destroy();
-      res.json({ mensaje: 'Visita eliminada correctamente' });
+      res.status(200).json({ message: "Visita eliminada" });
     } catch (error) {
-      res.status(500).json({ error: 'Error al eliminar la visita', details: error });
+      console.error("Error al eliminar la visita:", error);
+      res.status(500).json({ message: "Error al eliminar la visita", error });
     }
   };
 
-  // Cambiar estado (pendiente → aceptada/rechazada)
-  static cambiarEstado = async (req: Request, res: Response) => {
+  /**
+   * @description Marca una visita específica como leída.
+   * @route PUT /api/visita/marcar-leida/:id
+   */
+  static marcarComoLeida = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const { estado } = req.body;
-
-      const visita = await Visita.findByPk(id);
-      if (!visita) {
-        res.status(404).json({ error: 'Visita no encontrada' });
+      const [filasActualizadas] = await Visita.update({ leida: true }, {
+        where: { id_visita: id },
+      });
+      if (filasActualizadas === 0) {
+        res.status(404).json({ message: "Visita no encontrada" });
         return;
       }
-
-      visita.estado = estado;
-      await visita.save();
-
-      res.json({ mensaje: `Estado de la visita cambiado a ${estado}` });
+      res.status(200).json({ message: "Notificación marcada como leída" });
     } catch (error) {
-      res.status(500).json({ error: 'Error al cambiar estado de la visita', details: error });
+      console.error("Error al marcar como leída:", error);
+      res.status(500).json({ message: "Error al marcar como leída", error });
+    }
+  };
+
+  /**
+   * @description Marca todas las visitas no leídas como leídas.
+   * @route PUT /api/visita/marcar-todas-leidas
+   */
+  static marcarTodasComoLeidas = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const [filasActualizadas] = await Visita.update({ leida: true }, {
+        where: {
+          leida: false,
+        },
+      });
+      res.status(200).json({ message: `Se marcaron ${filasActualizadas} notificaciones como leídas.` });
+    } catch (error) {
+      console.error("Error al marcar todas como leídas:", error);
+      res.status(500).json({ message: "Error al marcar todas como leídas", error });
     }
   };
 }
