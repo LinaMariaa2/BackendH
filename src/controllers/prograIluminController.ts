@@ -35,9 +35,54 @@ export class PrograIluminController {
 
  static crearProgramacion = async (req: Request, res: Response) => {
   try {
+    const { fecha_inicio, fecha_finalizacion, id_zona } = req.body;
+
+    const inicio = new Date(fecha_inicio);
+    const fin = new Date(fecha_finalizacion);
+    const ahora = new Date();
+
+    // 1. Validar coherencia de fechas
+    if (isNaN(inicio.getTime()) || isNaN(fin.getTime())) {
+      res.status(400).json({ mensaje: "Fechas inválidas" });
+      return;
+    }
+    if (inicio >= fin) {
+      res.status(400).json({ mensaje: "La fecha de inicio debe ser menor a la finalización" });
+      return;
+    }
+    if (inicio < ahora) {
+      res.status(400).json({ mensaje: "No se puede programar en el pasado" });
+      return;
+    }
+
+    // 2. Validar solapamiento en la misma zona
+    const solapada = await ProgramacionIluminacion.findOne({
+      where: {
+        id_zona,
+        [Op.or]: [
+          { fecha_inicio: { [Op.between]: [inicio, fin] } },
+          { fecha_finalizacion: { [Op.between]: [inicio, fin] } },
+          {
+            [Op.and]: [
+              { fecha_inicio: { [Op.lte]: inicio } },
+              { fecha_finalizacion: { [Op.gte]: fin } }
+            ]
+          }
+        ]
+      }
+    });
+
+    if (solapada) {
+      res.status(409).json({
+        mensaje: "Ya existe una programación en este rango de tiempo para la misma zona"
+      });
+      return;
+    }
+
+    //  Crear nueva programación
     const nueva = await ProgramacionIluminacion.create(req.body);
 
-    // 🔹 Registrar automáticamente en historial
+    // Registrar automáticamente en historial
     const fechaActivacion = new Date(nueva.fecha_inicio);
     const duracionMs =
       new Date(nueva.fecha_finalizacion).getTime() -
@@ -53,50 +98,106 @@ export class PrograIluminController {
 
     res.status(201).json(nueva);
   } catch (error) {
+    console.error("❌ Error en crearProgramacion:", error);
     res.status(500).json({ error: 'Error al crear la programación', detalle: error });
   }
 };
 
 
-  static actualizarProgramacion = async (req: Request, res: Response) => {
-    const id = parseInt(req.params.id, 10);
-    if (isNaN(id)) {
-      res.status(400).json({ mensaje: 'ID inválido' });
+
+static async actualizarProgramacion(req: Request, res: Response): Promise<void> {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ mensaje: "ID inválido" });
+    return;
+  }
+
+  try {
+    const programacion = await ProgramacionIluminacion.findOne({
+      where: { id_iluminacion: id },
+    });
+
+    if (!programacion) {
+      res.status(404).json({ mensaje: "Programación no encontrada" });
       return;
     }
 
-    try {
-      const programacion = await ProgramacionIluminacion.findOne({where:{id_iluminacion: id}});
-      if (!programacion) {
-        res.status(404).json({ mensaje: 'Programación no encontrada' });
-        return;
-      }
+    const ahora = new Date();
+    const inicio = new Date(programacion.fecha_inicio);
 
-      await programacion.update(req.body);
-      res.json(programacion);
-    } catch (error) {
-      res.status(500).json({ error: 'Error al actualizar la programación', detalle: error });
-    }
-  };
-
-  static eliminarProgramacion = async (req: Request, res: Response) => {
-    const id = parseInt(req.params.id, 10);
-    if (isNaN(id)) {
-      res.status(400).json({ mensaje: 'ID inválido' });
+    // Bloquear solo si ya inició y está activa
+    if (inicio <= ahora && programacion.estado === true) {
+      res.status(409).json({
+        ok: false,
+        mensaje: "No se puede actualizar una programación que ya ha iniciado y sigue activa",
+      });
       return;
     }
 
-    try {
-      const eliminado = await ProgramacionIluminacion.destroy({ where: { id_iluminacion: id } });
-      if (eliminado) {
-        res.json({ mensaje: 'Programación eliminada correctamente' });
-      } else {
-        res.status(404).json({ mensaje: 'Programación no encontrada' });
-      }
-    } catch (error) {
-      res.status(500).json({ error: 'Error al eliminar la programación', detalle: error });
+    // Permitir actualizar si no ha iniciado o si está detenida
+    await programacion.update(req.body);
+    res.json({
+      ok: true,
+      mensaje: "Programación actualizada correctamente",
+      programacion,
+    });
+  } catch (error) {
+    console.error("❌ Error en actualizarProgramacion:", error);
+    res.status(500).json({
+      ok: false,
+      mensaje: "Error interno al actualizar la programación",
+      detalle: (error as Error).message,
+    });
+  }
+}
+
+static async eliminarProgramacion(req: Request, res: Response): Promise<void> {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ mensaje: "ID inválido" });
+    return;
+  }
+
+  try {
+    const programacion = await ProgramacionIluminacion.findOne({
+      where: { id_iluminacion: id },
+    });
+
+    if (!programacion) {
+      res.status(404).json({ mensaje: "Programación no encontrada" });
+      return;
     }
-  };
+
+    const ahora = new Date();
+    const inicio = new Date(programacion.fecha_inicio);
+
+    // Bloquear solo si ya inició y está activa
+    if (inicio <= ahora && programacion.estado === true) {
+      res.status(409).json({
+        ok: false,
+        mensaje: "No se puede eliminar una programación que ya ha iniciado y sigue activa",
+      });
+      return;
+    }
+
+    //  Permitir eliminar si no ha iniciado o si está detenida
+    await programacion.destroy();
+    res.json({
+      ok: true,
+      mensaje: "Programación eliminada correctamente",
+    });
+  } catch (error) {
+    console.error("❌ Error en eliminarProgramacion:", error);
+    res.status(500).json({
+      ok: false,
+      mensaje: "Error interno al eliminar la programación",
+      detalle: (error as Error).message,
+    });
+  }
+}
+
+
+
 
   //  Cambiar estado (detener/reanudar)
   static cambiarEstadoProgramacion = async (req: Request, res: Response) => {

@@ -2,10 +2,11 @@ import { Router } from 'express';
 import { PrograIluminController } from '../controllers/prograIluminController';
 import { validarProgramacion } from '../middlewares/validarProgramacionIlum';
 import { handleInputErrors } from '../middlewares/validation';
+import {  Request, Response, NextFunction } from 'express';
 
 const router = Router();
 
-// 🟢 Rutas específicas primero
+//  Rutas específicas primero
 router.get('/zonas/activas', PrograIluminController.getZonasActivasParaESP32);
 router.patch('/:id/estado', async (req, res, next) => {
   try {
@@ -24,11 +25,16 @@ router.get('/zona/:id/futuras', async (req, res, next) => {
 });
 
 
-// 🟡 Rutas generales después
+//  Rutas generales 
 router.get('/', PrograIluminController.getTodasLasProgramaciones);
 router.get('/:id', PrograIluminController.getProgramacionPorId);
 router.post('/', validarProgramacion, handleInputErrors, PrograIluminController.crearProgramacion);
 router.put('/:id', validarProgramacion, handleInputErrors, PrograIluminController.actualizarProgramacion);
+
+
+
+
+
 router.delete('/:id', PrograIluminController.eliminarProgramacion);
 
 
