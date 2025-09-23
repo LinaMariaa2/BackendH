@@ -2,7 +2,13 @@ import { Request, Response, NextFunction } from "express";
 import LecturaSensor from "../models/lecturaSensor";
 import Zona from "../models/zona";
 import GestionCultivo from "../models/gestionarCultivos";
-import { io } from "../server"; // Instancia de Socket.IO
+import { io } from "../server";
+//INICIO: CÓDIGO AGREGADO
+import { sendNotification } from "../services/notificationesService"; // 1. Se agrega el import
+
+// Objeto para regular el envío de notificaciones y evitar spam
+const lastNotificationSent: Record<string, number> = {};
+//FIN: CÓDIGO AGREGADO
 
 // 🕒 Registro del último guardado por sensor/zona
 const lastSavedAt: Record<string, number> = {};
@@ -26,6 +32,8 @@ export const registrarLectura = async (req: Request, res: Response, next: NextFu
     let alerta: string | null = null;
     let humedad_min: number | null = null;
     let humedad_max: number | null = null;
+    let responsable_id: number | null = null; // Para guardar el ID del responsable
+    let nombre_cultivo: string | null = null; // Para guardar el nombre del cultivo
 
     // Si la lectura es de humedad, obtener los rangos de la zona/cultivo
     if (id_zona) {
@@ -36,6 +44,9 @@ export const registrarLectura = async (req: Request, res: Response, next: NextFu
       if (zona && zona.cultivo) {
         humedad_min = zona.cultivo.humedad_min ?? 40;
         humedad_max = zona.cultivo.humedad_max ?? 70;
+        // Se guardan los datos del cultivo para usarlos después
+        responsable_id = zona.cultivo.responsable_id;
+        nombre_cultivo = zona.cultivo.nombre_cultivo;
 
         if (tipo_sensor === "humedad" || !tipo_sensor) {
           alerta =
@@ -45,6 +56,24 @@ export const registrarLectura = async (req: Request, res: Response, next: NextFu
         }
       }
     }
+    
+    // INICIO: CÓDIGO DE NOTIFICACIONES AGREGADO ---
+    // 2. Se agrega el bloque que envía la notificación si hay una alerta
+    if (alerta === "Fuera de rango" && responsable_id && nombre_cultivo) {
+      const notificationKey = `alerta-${id_zona}-${tipo_sensor}`;
+      const ahora = Date.now();
+      
+      // Lógica Anti-Spam: Solo enviar si han pasado +30 min desde la última alerta
+      if (!lastNotificationSent[notificationKey] || ahora - lastNotificationSent[notificationKey] > 30 * 60 * 1000) {
+        const titulo = '💧 Alerta de Humedad';
+        const mensaje = `El cultivo '${nombre_cultivo}' está fuera de rango. Humedad actual: ${valor}%.`;
+        
+        sendNotification(responsable_id, titulo, mensaje);
+        
+        lastNotificationSent[notificationKey] = ahora; // Se actualiza el tiempo
+      }
+    }
+    //FIN: CÓDIGO DE NOTIFICACIONES AGREGADO ---
 
     // 🔹 Emitir SIEMPRE al frontend
     const lecturaEmitida: any = {

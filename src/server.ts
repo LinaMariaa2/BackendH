@@ -4,24 +4,38 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
+import admin from 'firebase-admin';
 
+// --- CONFIGURACIÓN INICIAL ---
 dotenv.config();
+
+// --- INICIALIZACIÓN DE FIREBASE ---
+try {
+  // Lee las credenciales del archivo en la raíz del proyecto
+  const serviceAccount = require('../src/firebase.json'); 
+
+  // Inicializa la conexión con Firebase
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+  console.log('✅ Firebase Admin SDK inicializado correctamente.');
+} catch (error) {
+  console.error('❌ Error al inicializar Firebase Admin. Asegúrate de que tu archivo firebase.json existe y es correcto.', error);
+}
+
+// --- CREACIÓN DE LA APP DE EXPRESS ---
 const app = express();
-app.use(express.json());
 
+// --- MIDDLEWARES ---
 const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-
 app.use(cors({
   origin: frontendUrl,
   credentials: true,
 }));
+app.use(express.json()); // Para entender los cuerpos de las peticiones en formato JSON
+app.use(morgan('dev'));    // Para ver un log de las peticiones HTTP en la consola
 
-console.log('DEBUG: Middleware Morgan para logging aplicado.');
-app.use(morgan('dev'));
-
-// -----------------------------
-// Importación de Routers
-// -----------------------------
+// --- IMPORTACIÓN DE RUTAS ---
 import invernaderoRouter from './router/invernaderoRouter';
 import zonaRouter from './router/zonaRouter';
 import gestionarCultivoRouter from './router/gestionarCultivoRouter';
@@ -38,13 +52,11 @@ import personaRouter from './router/personaRouter';
 import iluminacionRouter from './router/iluminacionRouter';
 import lecturaSensorRouter from './router/lecturaSensorRouter';
 import visitaRouter from './router/visitaRouter';
-import notificacionRouter from './router/notificacionRouter';
+import notificacionesRouter from './router/notificationesRouter';
 
-// -----------------------------
-// Definición de Rutas
-// -----------------------------
+// --- DEFINICIÓN DE RUTAS DE LA API ---
 app.use('/api/auth', authRouter);
-app.use('/api/notificaciones', notificacionRouter);
+app.use('/api/notificaciones', notificacionesRouter);
 app.use('/api/invernadero', invernaderoRouter);
 app.use('/api/zona', zonaRouter);
 app.use('/api/cultivos', gestionarCultivoRouter);
@@ -61,24 +73,18 @@ app.use('/api/iluminacion', iluminacionRouter);
 app.use('/api/lecturas', lecturaSensorRouter);
 app.use('/api/users', userRouter);
 
-// -----------------------------
-// Middleware de Errores
-// -----------------------------
+// --- MANEJADOR DE ERRORES GLOBAL ---
+// Este middleware se ejecuta si ocurre un error en alguna de las rutas
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-    console.error('DEBUG: Error global capturado:', err.stack);
+    console.error('Error global capturado:', err.stack);
     res.status(500).json({
       error: 'Algo salió mal en el servidor.',
       details: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error',
     });
 });
 
-console.log('DEBUG: Manejador de errores global configurado.');
-
-// -----------------------------
-// Crear servidor HTTP y Socket.IO
-// -----------------------------
+// --- CREACIÓN DE SERVIDOR HTTP Y SOCKET.IO ---
 const server = createServer(app);
-
 const io = new SocketIOServer(server, {
   cors: {
     origin: frontendUrl,
@@ -86,14 +92,17 @@ const io = new SocketIOServer(server, {
   }
 });
 
-// ⭐ ESTA ES LA LÍNEA QUE FALTABA
+// Se guarda la instancia de 'io' en la app para poder usarla en los controladores
 app.set('io', io);
 
+// Lógica de conexión para Socket.IO
 io.on('connection', (socket) => {
-  console.log('Cliente conectado:', socket.id);
+  console.log('🔌 Cliente conectado a Socket.IO:', socket.id);
   socket.on('disconnect', () => {
-    console.log('Cliente desconectado:', socket.id);
+    console.log('🔌 Cliente desconectado:', socket.id);
   });
 });
 
+// --- EXPORTACIONES ---
+// Se exportan para que el archivo principal pueda arrancarlos
 export { app, server, io };

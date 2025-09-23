@@ -21,6 +21,7 @@ async function startServer() {
         console.error('❌ ERROR FATAL: Error durante la inicialización del servidor:', error);
         process.exit(1);
     }
+    
 }
 
 
