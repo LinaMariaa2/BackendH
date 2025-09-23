@@ -2,7 +2,7 @@ import { Table, Column, Model, DataType, PrimaryKey, AutoIncrement, ForeignKey }
 import Persona from './Persona';
 
 @Table({ tableName: 'tbl_notificacion', timestamps: false })
-export class Notificacion extends Model {
+export class Notificaciones extends Model {
   @PrimaryKey
   @AutoIncrement
   @Column(DataType.INTEGER)
@@ -24,4 +24,4 @@ export class Notificacion extends Model {
   @Column({ type: DataType.DATE, field: 'timestamp_envio', defaultValue: DataType.NOW })
   declare timestamp_envio: Date;
 }
-export default Notificacion;
+export default Notificaciones;
