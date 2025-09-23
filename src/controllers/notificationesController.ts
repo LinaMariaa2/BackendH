@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import TokenPush from '../models/tokenPush';
-import Notificacion from '../models/notificaciones';
+import Notificaciones from '../models/notificaciones'; // <-- Usa el nombre en plural
 
 export class NotificationController {
   
@@ -28,7 +28,7 @@ export class NotificationController {
   static async getNotificationsByUser(req: Request, res: Response) {
     const { id_persona } = req.params;
     try {
-      const notifications = await Notificacion.findAll({
+      const notifications = await Notificaciones.findAll({ // <-- Usa el nombre en plural
         where: { id_persona: id_persona },
         order: [['timestamp_envio', 'DESC']]
       });

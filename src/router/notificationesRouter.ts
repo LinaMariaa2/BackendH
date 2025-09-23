@@ -4,16 +4,16 @@ import { validateTokenRegistration } from '../middlewares/notificacionesValidati
 
 const router = Router();
 
-// Ruta para registrar un token. Pasa primero por el validador.
+// ANTES: router.post('/notifications/register', ...);
+// AHORA, la ruta es solo '/', porque la base ya está en server.ts
 router.post(
-  '/notifications/register',
+  '/register', // <-- CORREGIDO
   validateTokenRegistration,
   NotificationController.registerToken
 );
 
-// Ruta para obtener el historial de notificaciones
 router.get(
-  '/notifications/user/:id_persona',
+  '/user/:id_persona', // <-- CORREGIDO
   NotificationController.getNotificationsByUser
 );
 

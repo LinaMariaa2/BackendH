@@ -2,7 +2,7 @@ import { Table, Column, Model, DataType, PrimaryKey, AutoIncrement, ForeignKey }
 import Persona from './Persona';
 
 @Table({ tableName: 'tbl_notificacion', timestamps: false })
-export class Notificaciones extends Model {
+export class Notificaciones extends Model { 
   @PrimaryKey
   @AutoIncrement
   @Column(DataType.INTEGER)
