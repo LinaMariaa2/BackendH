@@ -5,15 +5,15 @@ import { validateTokenRegistration } from '../middlewares/notificacionesValidati
 const router = Router();
 
 // ANTES: router.post('/notifications/register', ...);
-// AHORA, la ruta es solo '/', porque la base ya está en server.ts
+// AHORA, la ruta es solo '/register' porque la base ya está en server.ts
 router.post(
-  '/register', // <-- CORREGIDO
+  '/register', // <-- ESTA ES LA CORRECCIÓN
   validateTokenRegistration,
   NotificationController.registerToken
 );
 
 router.get(
-  '/user/:id_persona', // <-- CORREGIDO
+  '/user/:id_persona', // <-- ESTA ES LA CORRECCIÓN
   NotificationController.getNotificationsByUser
 );
 
