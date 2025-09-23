@@ -5,22 +5,23 @@ import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import admin from 'firebase-admin';
+import path from 'path'; // Se importa el módulo 'path'
 
 // --- CONFIGURACIÓN INICIAL ---
 dotenv.config();
 
-// --- INICIALIZACIÓN DE FIREBASE ---
+// --- INICIALIZACIÓN DE FIREBASE (CON RUTA CORREGIDA) ---
 try {
-  // Lee las credenciales del archivo en la raíz del proyecto
-  const serviceAccount = require('../src/firebase.json'); 
+  // Se construye la ruta de forma dinámica para que funcione en cualquier entorno
+  const serviceAccountPath = path.join(__dirname, '..', 'firebase.json');
+  const serviceAccount = require(serviceAccountPath);
 
-  // Inicializa la conexión con Firebase
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
   });
   console.log('✅ Firebase Admin SDK inicializado correctamente.');
 } catch (error) {
-  console.error('❌ Error al inicializar Firebase Admin. Asegúrate de que tu archivo firebase.json existe y es correcto.', error);
+  console.error('❌ Error al inicializar Firebase Admin. Revisa la configuración.', error);
 }
 
 // --- CREACIÓN DE LA APP DE EXPRESS ---
@@ -32,8 +33,8 @@ app.use(cors({
   origin: frontendUrl,
   credentials: true,
 }));
-app.use(express.json()); // Para entender los cuerpos de las peticiones en formato JSON
-app.use(morgan('dev'));    // Para ver un log de las peticiones HTTP en la consola
+app.use(express.json());
+app.use(morgan('dev'));
 
 // --- IMPORTACIÓN DE RUTAS ---
 import invernaderoRouter from './router/invernaderoRouter';
@@ -74,7 +75,6 @@ app.use('/api/lecturas', lecturaSensorRouter);
 app.use('/api/users', userRouter);
 
 // --- MANEJADOR DE ERRORES GLOBAL ---
-// Este middleware se ejecuta si ocurre un error en alguna de las rutas
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     console.error('Error global capturado:', err.stack);
     res.status(500).json({
@@ -91,11 +91,7 @@ const io = new SocketIOServer(server, {
     methods: ['GET', 'POST']
   }
 });
-
-// Se guarda la instancia de 'io' en la app para poder usarla en los controladores
 app.set('io', io);
-
-// Lógica de conexión para Socket.IO
 io.on('connection', (socket) => {
   console.log('🔌 Cliente conectado a Socket.IO:', socket.id);
   socket.on('disconnect', () => {
@@ -104,5 +100,4 @@ io.on('connection', (socket) => {
 });
 
 // --- EXPORTACIONES ---
-// Se exportan para que el archivo principal pueda arrancarlos
 export { app, server, io };
