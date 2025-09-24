@@ -61,11 +61,11 @@ export const registrarLectura = async (req: Request, res: Response, next: NextFu
 
     io.emit("nuevaLectura", lecturaEmitida);
 
-    // 🔹 Guardar en DB solo cada 30 minutos por sensor/zona
+    // 🔹 Guardar en DB solo cada 20 minutos por sensor/zona
     const key = `${id_sensor}-${id_zona}`;
     const ahora = Date.now();
 
-    if (!lastSavedAt[key] || ahora - lastSavedAt[key] >= 30 * 60 * 1000) {
+    if (!lastSavedAt[key] || ahora - lastSavedAt[key] >= 20 * 60 * 1000) {
       const lectura = await LecturaSensor.create({
         id_sensor,
         valor,
@@ -84,6 +84,73 @@ export const registrarLectura = async (req: Request, res: Response, next: NextFu
 
   } catch (error) {
     console.error("❌ Error en registrarLectura:", error);
+    next(error);
+  }
+};
+
+//  controlador para el DHT11 
+export const registrarLecturaDHT11 = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { temperatura, humedad } = req.body;
+
+    if (temperatura === undefined && humedad === undefined) {
+      return res.status(400).json({ error: "Se requiere al menos temperatura o humedad" });
+    }
+
+    const lecturaDHT11: any = {
+      tipo: "dht11",
+      temperatura: temperatura ?? null,
+      humedad: humedad ?? null,
+      unidadTemp: "°C",
+      unidadHum: "%",
+      timestamp: new Date(),
+    };
+
+    const ahora = Date.now();
+
+    //  Guardar temperatura en DB cada 20 min
+    if (temperatura !== undefined) {
+      const keyTemp = `dht11-temp`;
+      if (!lastSavedAt[keyTemp] || ahora - lastSavedAt[keyTemp] >= 20 * 60 * 1000) {
+        await LecturaSensor.create({
+          id_sensor: 2, // 🔧 id fijo para temperatura del DHT11
+          valor: temperatura,
+          unidad: "°C",
+          id_zona: null,
+        });
+        lastSavedAt[keyTemp] = ahora;
+        console.log("💾 Temperatura DHT11 guardada en DB");
+      } else {
+        console.log("⚡ Temperatura DHT11 no guardada (menos de 30 min)");
+      }
+    }
+
+    //  Guardar humedad en DB cada 20 min
+    if (humedad !== undefined) {
+      const keyHum = `dht11-hum`;
+      if (!lastSavedAt[keyHum] || ahora - lastSavedAt[keyHum] >= 20 * 60 * 1000) {
+        await LecturaSensor.create({
+          id_sensor: 3, // 🔧 id fijo para humedad del DHT11
+          valor: humedad,
+          unidad: "%",
+          id_zona: null,
+        });
+        lastSavedAt[keyHum] = ahora;
+        console.log("💾 Humedad DHT11 guardada en DB");
+      } else {
+        console.log("⚡ Humedad DHT11 no guardada (menos de 30 min)");
+      }
+    }
+
+    // Emitir SOLO al canal del DHT11
+    io.emit("nuevaLecturaDHT11", lecturaDHT11);
+
+    console.log("📡 Lectura DHT11 emitida:", lecturaDHT11);
+
+    return res.status(201).json(lecturaDHT11);
+
+  } catch (error) {
+    console.error("❌ Error en registrarLecturaDHT11:", error);
     next(error);
   }
 };

@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { registrarLectura } from "../controllers/LecturaSensorController";
+import { registrarLectura, registrarLecturaDHT11 } from "../controllers/LecturaSensorController";
 
 const router = Router();
 
-// Forma correcta
+// 🔹 Ruta original
 router.post("/", async (req, res, next) => {
   try {
     await registrarLectura(req, res, next);
@@ -12,4 +12,14 @@ router.post("/", async (req, res, next) => {
   }
 });
 
+// 🔹 Nueva ruta para DHT11 (misma estructura)
+router.post("/dht11", async (req, res, next) => {
+  try {
+    await registrarLecturaDHT11(req, res, next);
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;
+
