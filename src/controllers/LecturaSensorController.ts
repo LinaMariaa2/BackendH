@@ -65,7 +65,7 @@ export const registrarLectura = async (req: Request, res: Response, next: NextFu
     const key = `${id_sensor}-${id_zona}`;
     const ahora = Date.now();
 
-    if (!lastSavedAt[key] || ahora - lastSavedAt[key] >= 20 * 60 * 1000) {
+    if (!lastSavedAt[key] || ahora - lastSavedAt[key] >= 15 * 60 * 1000) {
       const lectura = await LecturaSensor.create({
         id_sensor,
         valor,
@@ -111,7 +111,7 @@ export const registrarLecturaDHT11 = async (req: Request, res: Response, next: N
     //  Guardar temperatura en DB cada 20 min
     if (temperatura !== undefined) {
       const keyTemp = `dht11-temp`;
-      if (!lastSavedAt[keyTemp] || ahora - lastSavedAt[keyTemp] >= 20 * 60 * 1000) {
+      if (!lastSavedAt[keyTemp] || ahora - lastSavedAt[keyTemp] >= 15 * 60 * 1000) {
         await LecturaSensor.create({
           id_sensor: 2, // 🔧 id fijo para temperatura del DHT11
           valor: temperatura,
@@ -128,7 +128,7 @@ export const registrarLecturaDHT11 = async (req: Request, res: Response, next: N
     //  Guardar humedad en DB cada 20 min
     if (humedad !== undefined) {
       const keyHum = `dht11-hum`;
-      if (!lastSavedAt[keyHum] || ahora - lastSavedAt[keyHum] >= 20 * 60 * 1000) {
+      if (!lastSavedAt[keyHum] || ahora - lastSavedAt[keyHum] >= 15 * 60 * 1000) {
         await LecturaSensor.create({
           id_sensor: 3, // 🔧 id fijo para humedad del DHT11
           valor: humedad,
