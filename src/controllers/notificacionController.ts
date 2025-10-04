@@ -183,5 +183,34 @@ static async notificarRiego(tipo: "inicio_riego" | "fin_riego", id_zona: number,
     console.error("❌ Error al crear notificación de riego:", error);
   }
 }
+// 🔹 Notificación de iluminación (inicio o finalización)
+static async notificarIluminacion(tipo: "iluminacion_inicio" | "iluminacion_fin", id_zona: number) {
+  try {
+    const titulo = tipo === "iluminacion_inicio" ? "Iluminación iniciada" : "Iluminación finalizada";
+    const mensaje = `${tipo === "iluminacion_inicio" ? "Se ha encendido la iluminación" : "Se ha apagado la iluminación"} en zona ${id_zona}`;
+
+    const notificacion = await Notificacion.create({
+      tipo,
+      titulo,
+      mensaje,
+      leida: false,
+      timestamp: new Date(),
+      id_zona
+    });
+ 
+    const notificacionEmitir = {
+      ...notificacion.toJSON(),
+      createdAt: notificacion.timestamp,
+    };
+
+    // Emitir solo al operario (igual que riego)
+    io.to("operario").emit("nuevaNotificacion", notificacionEmitir);
+
+    console.log(`🔔 Notificación ${tipo} enviada para zona ${id_zona}`);
+  } catch (error) {
+    console.error("❌ Error al crear notificación de iluminación:", error);
+  }
+}
+
 
 }
