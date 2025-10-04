@@ -91,9 +91,18 @@ app.set('io', io);
 
 io.on('connection', (socket) => {
   console.log('Cliente conectado:', socket.id);
+
+  // Recibir el rol desde el frontend
+  const { role } = socket.handshake.query;
+
+  if (role === 'admin') socket.join('admin');
+  else if (role === 'operario') socket.join('operario');
+
   socket.on('disconnect', () => {
     console.log('Cliente desconectado:', socket.id);
   });
 });
+
+
 
 export { app, server, io };
