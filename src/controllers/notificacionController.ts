@@ -21,8 +21,13 @@ export class NotificacionController {
     
     static async getNotificaciones(req: Request, res: Response): Promise<void> {
         try {
-            const notificaciones = await Notificacion.findAll({ order: [["timestamp", "DESC"]] });
-            const notifs = notificaciones.map(n => ({ ...n.toJSON(), createdAt: n.timestamp }));
+            const notificaciones = await Notificacion.findAll({
+                order: [["timestamp", "DESC"]],
+            });
+            const notifs = notificaciones.map(n => ({
+                ...n.toJSON(),
+                createdAt: n.timestamp,
+            }));
             res.status(200).json(notifs);
         } catch (error) {
             res.status(500).json({ message: "Error al obtener notificaciones", error });
@@ -46,12 +51,18 @@ export class NotificacionController {
                 alertasHardwareActivas[id_zona] = true;
             }
 
-            // Aquí asumimos que las notificaciones creadas por esta ruta son para roles, no individuos aún
-            const notificacion = await Notificacion.create({ tipo, titulo, mensaje, leida: false, id_zona, timestamp: new Date() });
-            const notificacionConCreatedAt = { ...notificacion.toJSON(), createdAt: notificacion.timestamp, id_zona: id_zona ?? null };
+            const notificacion = await Notificacion.create({
+                tipo, titulo, mensaje, leida: false, id_zona, timestamp: new Date(),
+            });
+
+            const notificacionConCreatedAt = {
+                ...notificacion.toJSON(),
+                createdAt: notificacion.timestamp,
+                id_zona: id_zona ?? null,
+            };
 
             let targetRole: 'operario' | 'admin' | null = null;
-            if (["alerta_sensor", "info_sensor", "inicio_riego", "fin_riego"].includes(tipo)) {
+            if (["alerta_sensor", "info_sensor", "inicio_riego", "fin_riego", "iluminacion_inicio", "iluminacion_fin"].includes(tipo)) {
                 io.to("operario").emit("nuevaNotificacion", notificacionConCreatedAt);
                 targetRole = 'operario';
             } else if (["visita", "alerta_hardware"].includes(tipo)) {
@@ -59,7 +70,6 @@ export class NotificacionController {
                 targetRole = 'admin';
             }
 
-            // Lógica PUSH
             if (targetRole) {
                 const usersWithToken = await Persona.findAll({ where: { rol: targetRole, fcmToken: { [Op.ne]: null } } });
                 const tokens = usersWithToken.map(user => user.fcmToken).filter(Boolean) as string[];
@@ -67,14 +77,16 @@ export class NotificacionController {
                 if (tokens.length > 0) {
                     const message: admin.messaging.MulticastMessage = {
                         tokens,
-                        data: { title: titulo, body: mensaje }
+                        data: { title: titulo, body: mensaje } // Usar 'data' para que funcione en 2do plano
                     };
-                    await fcm.sendEachForMulticast(message);
-                    console.log(`🔔 Notificación Push enviada a rol '${targetRole}'.`);
+                    const response = await fcm.sendEachForMulticast(message);
+                    console.log(`🔔 Notificación Push enviada a rol '${targetRole}'. Éxito: ${response.successCount}, Fallo: ${response.failureCount}`);
                 }
             }
+
             res.status(201).json(notificacionConCreatedAt);
         } catch (error) {
+            console.error("❌ Error detallado al crear notificación:", JSON.stringify(error, null, 2));
             res.status(500).json({ message: "Error al crear notificación", error });
         }
     }
@@ -83,17 +95,21 @@ export class NotificacionController {
         try {
             const { id } = req.params;
             const notificacion = await Notificacion.findByPk(id);
+
             if (!notificacion) {
                 res.status(404).json({ message: "Notificación no encontrada" });
                 return;
             }
+
             notificacion.leida = true;
             await notificacion.save();
             io.emit("notificacionLeida", notificacion.id);
+
             if (notificacion.tipo === "alerta_hardware" && (notificacion as any).id_zona) {
                 const zona = (notificacion as any).id_zona;
                 alertasHardwareActivas[zona] = false;
             }
+
             res.status(200).json({ message: "Notificación marcada como leída", notificacion });
         } catch (error) {
             res.status(500).json({ message: "Error al marcar notificación", error });
@@ -115,8 +131,11 @@ export class NotificacionController {
 
     static async getNotificacionesOperario(req: Request, res: Response): Promise<void> {
         try {
-            const notificaciones = await Notificacion.findAll({ where: { tipo: { [Op.in]: ["alerta_sensor", "info_sensor","inicio_riego","fin_riego"] } }, order: [["timestamp", "DESC"]] });
-            const notifs = notificaciones.map(n => ({ ...n.toJSON(), createdAt: n.timestamp }));
+            const notificaciones = await Notificacion.findAll({
+                where: { tipo: { [Op.in]: ["alerta_sensor", "info_sensor","inicio_riego","fin_riego", "iluminacion_inicio", "iluminacion_fin"] } },
+                order: [["timestamp", "DESC"]],
+            });
+            const notifs = notificaciones.map(n => ({...n.toJSON(), createdAt: n.timestamp, }));
             res.status(200).json(notifs);
         } catch (error) {
             res.status(500).json({ message: "Error al obtener notificaciones de operario", error });
@@ -125,33 +144,38 @@ export class NotificacionController {
 
     static async getNotificacionesAdmin(req: Request, res: Response): Promise<void> {
         try {
-            const notificaciones = await Notificacion.findAll({ where: { tipo: { [Op.in]: ["visita", "alerta_hardware"] } }, order: [["timestamp", "DESC"]] });
-            const notifs = notificaciones.map(n => ({ ...n.toJSON(), createdAt: n.timestamp }));
+            const notificaciones = await Notificacion.findAll({
+                where: { tipo: { [Op.in]: ["visita", "alerta_hardware"] } },
+                order: [["timestamp", "DESC"]],
+            });
+            const notifs = notificaciones.map(n => ({ ...n.toJSON(), createdAt: n.timestamp, }));
             res.status(200).json(notifs);
         } catch (error) {
             res.status(500).json({ message: "Error al obtener notificaciones de admin", error });
         }
     }
 
-    // --- ✨ MÉTODO NUEVO Y SEGURO ---
+    // --- ✨ MÉTODO AÑADIDO ---
+    // Este método devuelve solo las notificaciones del usuario autenticado
     static async getMisNotificaciones(req: Request, res: Response): Promise<void> {
         try {
-            const personaId = req.user?.id_persona;
+            const personaId = req.user?.id_persona; // Obtenemos el ID del token JWT
             if (!personaId) {
                 res.status(401).json({ message: "No autorizado" });
                 return;
             }
+
             const notificaciones = await Notificacion.findAll({
-                where: { personaId: personaId },
+                where: { personaId: personaId }, // Filtramos por el ID del usuario
                 order: [["timestamp", "DESC"]],
             });
+
             res.status(200).json(notificaciones);
         } catch (error) {
             res.status(500).json({ message: "Error al obtener mis notificaciones", error });
         }
     }
 
-    // --- ✨ MÉTODO MEJORADO ---
     static async notificarRiego(tipo: "inicio_riego" | "fin_riego", id_zona: number, descripcion: string) {
         try {
             const titulo = tipo === "inicio_riego" ? "Riego iniciado" : "Riego finalizado";
@@ -161,59 +185,36 @@ export class NotificacionController {
 
             for (const operario of operarios) {
                 await Notificacion.create({
-                    tipo, titulo, mensaje, leida: false, timestamp: new Date(),
-                    personaId: operario.id_persona
+                    tipo, titulo, mensaje, leida: false, id_zona, timestamp: new Date(),
+                    personaId: operario.id_persona // Asignamos la notificación
                 });
             }
             
-            io.to("operario").emit("nuevaNotificacion", { titulo, mensaje, timestamp: new Date() });
-
-            const operariosConToken = operarios.filter(op => op.fcmToken);
-            const tokens = operariosConToken.map(op => op.fcmToken) as string[];
-
-            if (tokens.length > 0) {
-                const message: admin.messaging.MulticastMessage = {
-                    tokens,
-                    data: { title: titulo, body: mensaje }
-                };
-                await fcm.sendEachForMulticast(message);
-                console.log(`🔔 Notificación Push de RIEGO enviada a ${tokens.length} operarios.`);
-            }
+            // La notificación push y de socket.io ya se maneja en addNotificacion,
+            // si esta función es llamada desde ahí. Si es independiente, se debe añadir la lógica push aquí.
+            console.log(`🔔 Notificación de riego creada para ${operarios.length} operarios.`);
         } catch (error) {
-            console.error("❌ Error al crear y enviar notificación de riego:", error);
+            console.error("❌ Error al crear notificación de riego:", error);
         }
     }
 
-    // --- ✨ MÉTODO MEJORADO ---
     static async notificarIluminacion(tipo: "iluminacion_inicio" | "iluminacion_fin", id_zona: number) {
         try {
             const titulo = tipo === "iluminacion_inicio" ? "Iluminación iniciada" : "Iluminación finalizada";
-            const mensaje = `${tipo === "iluminacion_inicio" ? "Se ha encendido" : "Se ha apagado"} la iluminación en zona ${id_zona}`;
-
+            const mensaje = `${tipo === "iluminacion_inicio" ? "Se ha encendido la iluminación" : "Se ha apagado la iluminación"} en zona ${id_zona}`;
+            
             const operarios = await Persona.findAll({ where: { rol: 'operario' } });
 
             for (const operario of operarios) {
                 await Notificacion.create({
                     tipo, titulo, mensaje, leida: false, timestamp: new Date(), id_zona,
-                    personaId: operario.id_persona
+                    personaId: operario.id_persona // Asignamos la notificación
                 });
             }
             
-            io.to("operario").emit("nuevaNotificacion", { titulo, mensaje, timestamp: new Date() });
-
-            const operariosConToken = operarios.filter(op => op.fcmToken);
-            const tokens = operariosConToken.map(op => op.fcmToken) as string[];
-
-            if (tokens.length > 0) {
-                const message: admin.messaging.MulticastMessage = {
-                    tokens,
-                    data: { title: titulo, body: mensaje }
-                };
-                await fcm.sendEachForMulticast(message);
-                console.log(`🔔 Notificación Push de ILUMINACIÓN enviada a ${tokens.length} operarios.`);
-            }
+            console.log(`🔔 Notificación de iluminación creada para ${operarios.length} operarios.`);
         } catch (error) {
-            console.error("❌ Error al crear y enviar notificación de iluminación:", error);
+            console.error("❌ Error al crear notificación de iluminación:", error);
         }
     }
 }

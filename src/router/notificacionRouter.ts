@@ -1,12 +1,7 @@
 import { Router } from 'express';
 import { NotificacionController } from "../controllers/notificacionController";
-import { authenticateJWT } from '../middlewares/authMiddleware'; // ✨ 1. IMPORTA TU MIDDLEWARE DE AUTENTICACIÓN
 
 const router = Router();
-
-
-router.get("/", authenticateJWT, NotificacionController.getMisNotificaciones);
-
 
 // 🔹 Endpoints generales
 router.get("/todas", NotificacionController.getNotificaciones);
