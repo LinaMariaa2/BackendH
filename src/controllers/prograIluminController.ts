@@ -3,6 +3,8 @@ import { Op } from 'sequelize';
 import ProgramacionIluminacion from '../models/programacionIluminacion';
 import Zona from '../models/zona';
 import HistorialIluminacion from '../models/historialIluminacion'
+import { NotificacionController } from './notificacionController';
+
 
 export class PrograIluminController {
   static getTodasLasProgramaciones = async (_req: Request, res: Response) => {
@@ -231,10 +233,11 @@ static async eliminarProgramacion(req: Request, res: Response): Promise<void> {
           duracion_minutos,
         });
 
-      
-      
+        await NotificacionController.notificarIluminacion("iluminacion_inicio", programacion.id_zona);  
+    }else {
+      //  Notificación de finalización
+      await NotificacionController.notificarIluminacion("iluminacion_fin", programacion.id_zona);
     }
-
     return res.json({
       mensaje: `Programación ${programacion.estado ? 'reanuda' : 'detenida'} correctamente`,
       estado: programacion.estado,
@@ -317,4 +320,6 @@ static async getProgramacionesFuturasPorZona(req: Request, res: Response) {
       });
     }
   };
+
+  
 }

@@ -13,10 +13,12 @@ export class Notificacion extends Model {
   declare id: number;
 
   @Column({
-    type: DataType.ENUM("alerta", "riego", "iluminacion", "cultivo", "sistema"),
+    type: DataType.ENUM("alerta", "riego", "iluminacion", "cultivo", "sistema","alerta_hardware","alerta_sensor",
+     "info_sensor", "visita", "inicio_riego","fin_riego", "iluminacion_inicio","iluminacion_fin"),
     allowNull: false,
   })
-  declare tipo: "alerta" | "riego" | "iluminacion" | "cultivo" | "sistema";
+  declare tipo: "alerta" | "riego" | "iluminacion" | "cultivo" | "sistema"| "alerta_hardware"
+    | "alerta_sensor" | "info_sensor" | "visita" | "inicio_riego" | "fin_riego" | "iluminacion_inicio" | "iluminacion_fin";
 
   @Column({
     type: DataType.STRING,

@@ -1,14 +1,16 @@
 import { Router } from 'express';
-import { visitaController } from '../controllers/visitaController';
 import { NotificacionController } from "../controllers/notificacionController";
 
 const router = Router();
 
-// GET /api/notificaciones - Obtiene todas las visitas para ser mostradas como notificaciones
-router.get('/', visitaController.obtenerTodas);
+// 🔹 Endpoints generales
+router.get("/todas", NotificacionController.getNotificaciones);
+router.post("/", NotificacionController.addNotificacion);
+router.patch("/:id/leida", NotificacionController.marcarLeida);
+router.put("/marcar-todas-leidas", NotificacionController.marcarTodasLeidas);
 
-router.get("/todas", NotificacionController.getNotificaciones); // Obtener todas las notificaciones
-router.post("/", NotificacionController.addNotificacion);       // Crear nueva notificación
-router.patch("/:id/leida", NotificacionController.marcarLeida); // Marcar como leída
+// 🔹 Endpoints por rol
+router.get("/operario", NotificacionController.getNotificacionesOperario);
+router.get("/admin", NotificacionController.getNotificacionesAdmin);
 
 export default router;

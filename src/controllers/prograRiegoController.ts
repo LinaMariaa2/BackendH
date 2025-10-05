@@ -3,6 +3,7 @@ import { Op } from 'sequelize';
 import ProgramacionRiego from '../models/programacionRiego';
 import Zona from '../models/zona';
 import HistorialRiego from '../models/historialRiego'; // <-- Importar modelo de historial
+import { NotificacionController } from './notificacionController';
 
 export class PrograRiegoController {
   static getTodasLasProgramaciones = async (_req: Request, res: Response): Promise<void> => {
@@ -204,6 +205,7 @@ export class PrograRiegoController {
         const fechaActivacion = new Date();
         const duracionMs = new Date(programacion.fecha_finalizacion).getTime() - new Date(programacion.fecha_inicio).getTime();
         const duracion_minutos = Math.round(duracionMs / 60000);
+        await NotificacionController.notificarRiego("inicio_riego", programacion.id_zona, programacion.descripcion);
 
         await HistorialRiego.create({
           id_pg_riego: programacion.id_pg_riego,
@@ -211,6 +213,9 @@ export class PrograRiegoController {
           fecha_activacion: fechaActivacion,
           duracion_minutos,
         });
+      }else {
+        // Riego finalizado
+        await NotificacionController.notificarRiego("fin_riego", programacion.id_zona, programacion.descripcion);
       }
 
       res.json({ mensaje: `Programación ${activo ? 'reanudada' : 'detenida'} correctamente`, estado: activo });
@@ -271,4 +276,69 @@ export class PrograRiegoController {
       res.status(500).json({ error: 'Error al obtener zonas activas de riego', detalle: (error as Error).message || error });
     }
   };
+
+ /**
+   * 🔹 Activar riego automático en una zona
+   */
+  static async activarRiegoAutomatico(id_zona: number) {
+    try {
+      const ahora = new Date();
+      const fin = new Date(ahora.getTime() + 15 * 60000); // por defecto 15 min de riego
+
+      // Crear registro en ProgramacionRiego con estado activo
+      const programacion = await ProgramacionRiego.create({
+        fecha_inicio: ahora,
+        fecha_finalizacion: fin,
+        id_zona,
+        descripcion: "Riego automático por humedad baja",
+        tipo_riego: "goteo", // 👈 puedes ajustarlo según la zona o config
+        estado: true,
+      });
+
+      // Registrar historial
+      await HistorialRiego.create({
+        id_pg_riego: programacion.id_pg_riego,
+        id_zona: id_zona,
+        fecha_activacion: ahora,
+        duracion_minutos: 15,
+      });
+
+      console.log(`🌱 Riego automático activado en zona ${id_zona}`);
+      return programacion;
+    } catch (error) {
+      console.error("❌ Error en activarRiegoAutomatico:", error);
+    }
+  }
+
+  /**
+   * 🔹 Detener riego automático en una zona
+   */
+  static async detenerRiegoAutomatico(id_zona: number) {
+    try {
+      const ahora = new Date();
+
+      // Buscar programaciones activas en esa zona
+      const activas = await ProgramacionRiego.findAll({
+        where: {
+          id_zona,
+          estado: true,
+          fecha_finalizacion: { [Op.gt]: ahora },
+        },
+      });
+
+      // Marcarlas como inactivas y ajustar su finalización
+      for (const prog of activas) {
+        await prog.update({ estado: false, fecha_finalizacion: ahora });
+      }
+
+      console.log(`💧 Riego automático detenido en zona ${id_zona}`);
+      return activas.length > 0;
+    } catch (error) {
+      console.error("❌ Error en detenerRiegoAutomatico:", error);
+    }
+  }
+
+
 }
+
+ 
