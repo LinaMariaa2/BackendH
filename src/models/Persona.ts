@@ -1,6 +1,6 @@
 import { Table, Column, DataType, PrimaryKey, AutoIncrement, CreatedAt, UpdatedAt, Default, AllowNull, HasOne } from 'sequelize-typescript';
 import { Model } from 'sequelize-typescript'; 
-import Perfil from './Perfil'; // Importa el modelo Perfil para la relación
+import Perfil from './Perfil';
 
 @Table({ tableName: 'tbl_persona', timestamps: true })
 export class Persona extends Model {
@@ -24,9 +24,7 @@ export class Persona extends Model {
 
   @Default('operario')
   @AllowNull(false)
-  @Column({
-    type: DataType.ENUM({ values: ['admin', 'operario'] }),
-  })
+  @Column({ type: DataType.ENUM({ values: ['admin', 'operario'] }) })
   declare rol: 'admin' | 'operario';
 
   @AllowNull(false)
@@ -50,6 +48,13 @@ export class Persona extends Model {
   @AllowNull(false)
   @Column({ type: DataType.INTEGER })
   declare intentos: number;
+  
+  @AllowNull(true)
+  @Column({
+      type: DataType.STRING(255),
+      field: 'fcm_token'
+  })
+  declare fcmToken: string | null;
 
   @CreatedAt
   @Column({ field: 'created_at' })
@@ -59,7 +64,6 @@ export class Persona extends Model {
   @Column({ field: 'updated_at' })
   declare updatedAt: Date;
 
-  // Define la relación uno a uno con Perfil
   @HasOne(() => Perfil, { foreignKey: 'personaId', as: 'perfil' }) 
   declare perfil: Perfil; 
 }

@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import { server } from './server';
 import { sequelize } from './config/db';
+import './config/firebaseConfig';
 
 const port = process.env.PORT || 4000;
 async function startServer() {

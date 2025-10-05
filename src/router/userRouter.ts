@@ -5,6 +5,14 @@ import upload from '../config/multerConfig'; // Importa la instancia de Multer
 
 const router = Router();
 
+router.post(
+    '/fcm-token',
+    authenticateJWT, // Tu middleware de autenticación
+    (req: Request, res: Response, next: NextFunction) => {
+        UserController.saveFcmToken(req, res).catch(next);
+    }
+)
+
 // Nuevo método para obtener el perfil del usuario autenticado (usado por /perfil)
 router.get('/perfil', authenticateJWT, (req: Request, res: Response, next: NextFunction) => {
     UserController.getAuthenticatedUserProfile(req, res).catch(next);

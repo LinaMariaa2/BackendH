@@ -30,6 +30,31 @@ const supabase: SupabaseClient = createClient(supabaseUrl, supabaseServiceKey);
 
 export class UserController {
 
+    static saveFcmToken = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const userId = req.user?.id_persona;
+        const { token } = req.body;
+
+        if (!userId || !token) {
+            return res.status(400).json({ error: 'Faltan el ID del usuario o el token.' });
+        }
+
+        const persona = await Persona.findByPk(userId);
+        if (!persona) {
+            return res.status(404).json({ error: 'Usuario no encontrado.' });
+        }
+
+        persona.fcmToken = token;
+        await persona.save();
+
+        return res.status(200).json({ message: 'Token guardado exitosamente.' });
+
+    } catch (error: any) {
+        console.error('Error al guardar FCM token:', error);
+        return res.status(500).json({ error: 'Error interno del servidor.' });
+    }
+};
+
  
     static getAuthenticatedUserProfile = async (req: Request, res: Response): Promise<Response> => {
         try {
