@@ -16,20 +16,6 @@ export class visitaController {
       // Crear la visita en la base de datos
       const nuevaVisita = await Visita.create(datos);
 
-      // Convertimos a JSON plano para enviar por Socket.IO
-      const payload = {
-        id: nuevaVisita.id_visita,
-        tipo: "visita",
-        nombre_visitante: nuevaVisita.nombre_visitante,
-        motivo: nuevaVisita.motivo,
-        ciudad: nuevaVisita.ciudad,
-        correo: nuevaVisita.correo,
-        telefono: nuevaVisita.telefono,
-        fecha_visita: nuevaVisita.fecha_visita,
-        leida: nuevaVisita.leida,
-        createdAt: nuevaVisita.createdAt,
-      };
-
       // Crear la notificación en la base de datos
       await Notificacion.create({
         tipo: "visita",
@@ -37,6 +23,12 @@ export class visitaController {
         mensaje: `El usuario ${nuevaVisita.nombre_visitante} agendó una visita para el ${nuevaVisita.fecha_visita}.`,
         leida: false,
       });
+
+       // Convertir a JSON plano y emitir
+    const payload = {
+      tipo: "visita",
+      ...nuevaVisita.toJSON(),
+    };
 
       // Emitir la notificación por Socket.IO
       io.emit("nuevaNotificacion", payload);
