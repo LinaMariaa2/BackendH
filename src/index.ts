@@ -11,7 +11,7 @@ async function startServer() {
         console.log('DEBUG: Autenticación exitosa ✅');
 
         console.log('DEBUG: Sincronizando modelos...');
-        await sequelize.sync({ alter: true });
+        await sequelize.sync();
         console.log('DEBUG: Modelos sincronizados ✅');
 
         server.listen(port, () => {

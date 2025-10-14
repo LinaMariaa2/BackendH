@@ -1,4 +1,5 @@
-import { Table, Column, Model, DataType } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey } from 'sequelize-typescript';
+import { Visita } from './visita';
 
 @Table({
   tableName: 'notificaciones',
@@ -13,12 +14,28 @@ export class Notificacion extends Model {
   declare id: number;
 
   @Column({
-    type: DataType.ENUM("alerta", "riego", "iluminacion", "cultivo", "sistema","alerta_hardware","alerta_sensor",
-     "info_sensor", "visita", "inicio_riego","fin_riego", "iluminacion_inicio","iluminacion_fin"),
+    type: DataType.ENUM(
+      "alerta", "riego", "iluminacion", "cultivo", "sistema",
+      "alerta_hardware", "alerta_sensor", "info_sensor",
+      "visita", "inicio_riego", "fin_riego",
+      "iluminacion_inicio", "iluminacion_fin"
+    ),
     allowNull: false,
   })
-  declare tipo: "alerta" | "riego" | "iluminacion" | "cultivo" | "sistema"| "alerta_hardware"
-    | "alerta_sensor" | "info_sensor" | "visita" | "inicio_riego" | "fin_riego" | "iluminacion_inicio" | "iluminacion_fin";
+  declare tipo:
+    | "alerta"
+    | "riego"
+    | "iluminacion"
+    | "cultivo"
+    | "sistema"
+    | "alerta_hardware"
+    | "alerta_sensor"
+    | "info_sensor"
+    | "visita"
+    | "inicio_riego"
+    | "fin_riego"
+    | "iluminacion_inicio"
+    | "iluminacion_fin";
 
   @Column({
     type: DataType.STRING,
@@ -43,6 +60,7 @@ export class Notificacion extends Model {
     defaultValue: false,
   })
   declare leida: boolean;
+
 }
 
 export default Notificacion;

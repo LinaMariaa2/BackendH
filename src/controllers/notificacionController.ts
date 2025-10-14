@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Notificacion from "../models/notificacion";
 import { io } from "../server"; 
 import { Op } from "sequelize";
+import Visita from "../models/visita";
 
 // --- Objeto para controlar alertas de hardware activas por zona ---
 const alertasHardwareActivas: Record<string | number, boolean> = {};
@@ -137,23 +138,42 @@ export class NotificacionController {
   }
 
   // 🔹 Notificaciones para admin
+
   static async getNotificacionesAdmin(req: Request, res: Response): Promise<void> {
     try {
+      // 1️⃣ Trae todas las notificaciones de tipo visita o hardware
       const notificaciones = await Notificacion.findAll({
         where: { tipo: { [Op.in]: ["visita", "alerta_hardware"] } },
         order: [["timestamp", "DESC"]],
+        raw: true,
       });
 
-      const notifs = notificaciones.map(n => ({
-        ...n.toJSON(),
-        createdAt: n.timestamp,
-      }));
+      // 2️⃣ Trae todas las visitas para unir con las notificaciones
+      const visitas = await Visita.findAll({ raw: true });
 
-      res.status(200).json(notifs);
+      // 3️⃣ Une los datos: si la notificación es de visita, agrega la info asociada
+      const resultado = notificaciones.map((noti: any) => {
+        if (noti.tipo === "visita") {
+          const visita = visitas.find((v: any) => v.id_visita === noti.id_visita);
+          return {
+            ...noti,
+            nombre_visitante: visita?.nombre_visitante || "Sin nombre",
+            motivo: visita?.motivo || "Motivo no especificado",
+            ciudad: visita?.ciudad || "",
+            correo: visita?.correo || "",
+            fecha_visita: visita?.fecha_visita || "",
+          };
+        }
+        return noti;
+      });
+
+      res.status(200).json(resultado);
     } catch (error) {
+      console.error("Error en getNotificacionesAdmin:", error);
       res.status(500).json({ message: "Error al obtener notificaciones de admin", error });
     }
   }
+
 
   // 🔹 Notificación de riego (inicio o finalización)
 static async notificarRiego(tipo: "inicio_riego" | "fin_riego", id_zona: number, descripcion: string) {

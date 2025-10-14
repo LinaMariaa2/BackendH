@@ -22,7 +22,9 @@ export class visitaController {
         titulo: "Nueva visita agendada",
         mensaje: `El usuario ${nuevaVisita.nombre_visitante} agendó una visita para el ${nuevaVisita.fecha_visita}.`,
         leida: false,
+        id_visita: nuevaVisita.id_visita, 
       });
+
 
        // Convertir a JSON plano y emitir
     const payload = {
