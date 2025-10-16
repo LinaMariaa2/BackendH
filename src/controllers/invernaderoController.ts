@@ -4,7 +4,7 @@ import Zona from '../models/zona';
 import { actualizarConteoZonas } from '../helpers/actualizarConteoZona';
 import { Persona } from '../models/Persona';
 
-// ✅ CORRECCIÓN CLAVE: El retorno de las funciones asíncronas es Promise<Response>
+// ✅ CAMBIO CLAVE: Todas las funciones asíncronas devuelven Promise<Response>
 export class InvernaderoController {
   public static async getInvernaderosPorOperario(req: Request, res: Response): Promise<Response> {
     try {
@@ -38,10 +38,10 @@ export class InvernaderoController {
         order: [['id_invernadero', 'ASC']],
       });
 
-      return res.json(invernaderosActualizados); // ⭐ return añadido y tipo Response
+      return res.json(invernaderosActualizados); // ⭐ return añadido
     } catch (error: any) {
       console.error('❌ Error al obtener invernaderos del operario:', error);
-      return res.status(500).json({ 
+      return res.status(500).json({ // ⭐ return añadido
         error: 'Error al obtener invernaderos del operario',
         details: error.message,
       });
@@ -55,10 +55,10 @@ export class InvernaderoController {
         attributes: ['id_invernadero', 'nombre'],
         order: [['id_invernadero', 'ASC']],
       });
-      return res.json(invernaderos); // ⭐ return añadido y tipo Response
+      return res.json(invernaderos); // ⭐ return añadido
     } catch (error: any) {
       console.error('❌ Error al obtener los invernaderos activos:', error);
-      return res.status(500).json({ 
+      return res.status(500).json({ // ⭐ return añadido
         error: 'Error al obtener invernaderos activos',
         details: error.message,
       });
@@ -89,10 +89,10 @@ export class InvernaderoController {
         order: [['id_invernadero', 'ASC']],
       });
 
-      return res.json(invernaderosActualizados); // ⭐ return añadido y tipo Response
+      return res.json(invernaderosActualizados); // ⭐ return añadido
     } catch (error: any) {
       console.error('❌ Error al obtener invernaderos:', error);
-      return res.status(500).json({ 
+      return res.status(500).json({ // ⭐ return añadido
         error: 'Error al obtener los invernaderos',
         details: error.message,
       });
@@ -125,10 +125,10 @@ export class InvernaderoController {
         order: [['id_invernadero', 'ASC']],
       });
 
-      return res.json(invernaderosActualizados); // ⭐ return añadido y tipo Response
+      return res.json(invernaderosActualizados); // ⭐ return añadido
     } catch (error: any) {
       console.error('❌ Error al obtener invernaderos activos:', error);
-      return res.status(500).json({ 
+      return res.status(500).json({ // ⭐ return añadido
         error: 'Error al obtener todos los invernaderos activos',
         details: error.message,
       });
@@ -142,10 +142,10 @@ export class InvernaderoController {
       if (!invernadero) {
         return res.status(404).json({ error: 'Invernadero no encontrado' });
       }
-      return res.json(invernadero); // ⭐ return añadido y tipo Response
+      return res.json(invernadero); // ⭐ return añadido
     } catch (error: any) {
       console.error('Error al obtener el invernadero:', error);
-      return res.status(500).json({ error: 'Error al obtener el invernadero', details: error.message });
+      return res.status(500).json({ error: 'Error al obtener el invernadero', details: error.message }); // ⭐ return añadido
     }
   }
 
@@ -174,10 +174,10 @@ export class InvernaderoController {
         include: [{ model: Persona, as: 'encargado' }],
       });
 
-      return res.status(201).json(invernaderoConResponsable);
+      return res.status(201).json(invernaderoConResponsable); // ⭐ return añadido
     } catch (error: any) {
       console.error("Error al crear el invernadero:", error);
-      return res.status(500).json({ 
+      return res.status(500).json({ // ⭐ return añadido
         error: 'Error al crear el invernadero',
         details: error.message,
       });
@@ -214,13 +214,13 @@ export class InvernaderoController {
       invernadero.estado = estado;
       await invernadero.save({ fields: ['estado'] });
 
-      return res.json({ // ⭐ return añadido y tipo Response
+      return res.json({ // ⭐ return añadido
         mensaje: 'Estado del invernadero actualizado correctamente',
         invernadero,
       });
     } catch (error: any) {
       console.error('Error al cambiar estado del invernadero:', error);
-      return res.status(500).json({ error: 'Error interno del servidor', details: error.message });
+      return res.status(500).json({ error: 'Error interno del servidor', details: error.message }); // ⭐ return añadido
     }
   }
 
@@ -233,10 +233,10 @@ export class InvernaderoController {
       if (rowsUpdated === 0) {
         return res.status(404).json({ error: 'Invernadero no encontrado' });
       }
-      return res.json({ mensaje: 'Invernadero actualizado correctamente' }); // ⭐ return añadido y tipo Response
+      return res.json({ mensaje: 'Invernadero actualizado correctamente' }); // ⭐ return añadido
     } catch (error: any) {
       console.error('Error al actualizar invernadero:', error);
-      return res.status(500).json({
+      return res.status(500).json({ // ⭐ return añadido
         error: 'Error al actualizar el invernadero',
         details: error.message,
       });
@@ -267,10 +267,10 @@ export class InvernaderoController {
       invernadero.estado = 'inactivo';
       await invernadero.save({ fields: ['estado'] });
 
-      return res.json({ mensaje: 'Invernadero inactivado correctamente' }); // ⭐ return añadido y tipo Response
+      return res.json({ mensaje: 'Invernadero inactivado correctamente' }); // ⭐ return añadido
     } catch (error: any) {
       console.error('Error al inactivar invernadero:', error);
-      return res.status(500).json({ error: 'Error al inactivar invernadero', details: error.message });
+      return res.status(500).json({ error: 'Error al inactivar invernadero', details: error.message }); // ⭐ return añadido
     }
   }
 
@@ -283,10 +283,10 @@ export class InvernaderoController {
       }
       invernadero.set('estado', 'activo');
       await invernadero.save({ fields: ['estado'] });
-      return res.json({ mensaje: 'Invernadero activado correctamente' }); // ⭐ return añadido y tipo Response
+      return res.json({ mensaje: 'Invernadero activado correctamente' }); // ⭐ return añadido
     } catch (error: any) {
       console.error('Error al activar invernadero:', error);
-      return res.status(500).json({
+      return res.status(500).json({ // ⭐ return añadido
         error: 'Error al activar el invernadero',
         details: error.message,
       });
@@ -317,10 +317,10 @@ export class InvernaderoController {
       invernadero.estado = 'mantenimiento';
       await invernadero.save({ fields: ['estado'] });
 
-      return res.json({ mensaje: 'Invernadero puesto en mantenimiento correctamente' }); // ⭐ return añadido y tipo Response
+      return res.json({ mensaje: 'Invernadero puesto en mantenimiento correctamente' }); // ⭐ return añadido
     } catch (error: any) {
       console.error('Error al poner en mantenimiento:', error);
-      return res.status(500).json({ error: 'Error al poner en mantenimiento', details: error.message });
+      return res.status(500).json({ error: 'Error al poner en mantenimiento', details: error.message }); // ⭐ return añadido
     }
   }
 
@@ -348,15 +348,15 @@ export class InvernaderoController {
       }
 
       await invernadero.destroy();
-      return res.json({ mensaje: 'Invernadero eliminado permanentemente' }); // ⭐ return añadido y tipo Response
+      return res.json({ mensaje: 'Invernadero eliminado permanentemente' }); // ⭐ return añadido
     } catch (err: any) {
       console.error(err);
       if (err.name === "SequelizeForeignKeyConstraintError") {
-        return res.status(400).json({ error: "No se puede eliminar el invernadero porque tiene registros relacionados" });
+        return res.status(400).json({ error: "No se puede eliminar el invernadero porque tiene registros relacionados" }); // ⭐ return añadido
       }
-      return res.status(500).json({ error: err.message || "Error interno del servidor" });
+      return res.status(500).json({ error: err.message || "Error interno del servidor" }); // ⭐ return añadido
     }
   }
 }
 
-export default InvernaderoController;
+export default InvernaderoController;g
