@@ -359,4 +359,4 @@ export class InvernaderoController {
   }
 }
 
-export default InvernaderoController;g
+export default InvernaderoController;
